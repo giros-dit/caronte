@@ -6,10 +6,6 @@ import data.serverConfig as config
 
 views = Blueprint('views', __name__)
 
-def currentVersion():
-    with open('./.git/refs/heads/Caronte') as version:
-        return str(version.read()).strip()
-
 @views.route('/', methods=['GET'])
 @login_required
 def index():
@@ -20,7 +16,7 @@ def index():
                 owner = Ownership.query.filter_by(user_id = current_user.id).all()
                 for machine in owner:
                     machines.append(Machine.query.get(machine.machine_id))
-            return render_template('index.html', TITLE=config.TITLE, machines=machines, isAdmin=current_user.admin, currentVersion=currentVersion())
+            return render_template('index.html', TITLE=config.TITLE, machines=machines, isAdmin=current_user.admin)
         else:
             return render_template('changePassword.html')
 
