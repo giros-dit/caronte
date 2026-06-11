@@ -13,14 +13,13 @@ auth = Blueprint('auth', __name__)
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form.get('email')
+        user_id = request.form.get('user_id')
         password = request.form.get('password')
         remember = True if request.form.get('remember') != None else False
-        #user = User.query.filter_by(email=email).first()
+
         user = User.query.filter(
-            (User.email == email) |
-            (User.email == f"{email}@alumnos.upm.es") |
-            (User.email == f"{email}@upm.es")
+            (User.username == user_id) |
+            (User.email == user_id)
         ).first()
         if user:
             if check_password_hash(user.password, password):
@@ -29,7 +28,7 @@ def login():
             else:
                 flash('Contraseña incorrecta.', category='error')
         else:
-            flash('El email especificado no está registrado.', category='error')
+            flash('El usuario o email especificado no está registrado.', category='error')
 
     return render_template("./login.html", user=current_user, TITLE=config.TITLE)
 

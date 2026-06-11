@@ -8,20 +8,28 @@ from database import Base
 class User(UserMixin, Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True) # primary keys are required by SQLAlchemy
-    email = Column(String(100), unique=True)
-    password = Column((String(100)))
+    username = Column(String(100), unique=True)
+    email = Column(String(100), unique=True, nullable=True)
+    password = Column((String(100)), nullable=True)
     admin = Column(Boolean, default=False)
     activated = Column(Boolean, default=False)
 
     owns = relationship("Ownership", cascade="all, delete")
 
-    def __init__(self, email, password):
+    def __init__(self, username, email=None, password=None):
+        self.username = username
         self.email = email
-        self.password = generate_password_hash(password)
-    
+        self.password = generate_password_hash(password) if password else None
+
     def __repr__(self):
-        user_json = {"id": self.id, "email": self.email, "password": self.password, "admin": self.admin, "activated": self.activated}
+        user_json = {"id": self.id, "username": self.username, "email": self.email, "password": self.password, "admin": self.admin, "activated": self.activated}
         return str(user_json)
+    
+    def setUsername(self,username):
+        self.username = username
+    
+    def setEmail(self,email):
+        self.email = email
 
     def setAdmin(self,admin):
         self.admin = admin

@@ -17,28 +17,20 @@ app = Flask(__name__)
 
 init_db()
 
-def insertUser(mail, password, isAdmin=False, activated=False):
-    newUser = User(email=mail, password=password)
-    newUser.admin = isAdmin
-    newUser.activated = activated
-    db_session.add(newUser)
-    db_session.commit()
-    return
-
 users = User.query.all()
 if users == []:
-    if os.environ.get('ENV') != None and os.environ.get('ENV') == "firstrun":
-
-        if os.environ.get('ADMIN_MAIL') != None and os.environ.get('ADMIN_PASS') != None:
-            insertUser(os.environ.get('ADMIN_MAIL'), os.environ.get('ADMIN_PASS'), True, True)
-            exit(0)
-        else:
-            print("Deben especificarse las credenciales del administrador inicial mediante las variables de entorno ADMIN_MAIL y ADMIN_PASS.")
-            exit(1)
-    
-    else:
-        print("Antes de ejecutar la aplicación por primera vez, es necesario emplear el modo ENV=firstrun y especificar las credenciales del administrador inicial mediante las variables de entorno ADMIN_MAIL y ADMIN_PASS.")
-        exit(0)    
+    print("No users found, creating default admin user with random password...")
+    adminPassword = os.urandom(8).hex()
+    newUser = User(username="admin", email=None, password=adminPassword)
+    newUser.admin = True
+    newUser.activated = True
+    try:
+        db_session.add(newUser)
+        db_session.commit()
+    except Exception as e:
+        print("Error creating default admin user: " + str(e))
+    finally:
+        print(f"Default 'admin' user created with password: {adminPassword} \n\n")
 
 
 app.secret_key = config.SECRET
