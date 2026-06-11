@@ -8,3 +8,5 @@ MAIL_SERVER = os.environ.get("MAIL_SERVER") or "localhost"
 MAIL_PORT = os.environ.get("MAIL_PORT") or 25
 MAIL_USER = os.environ.get("MAIL_USER")
 MAIL_PASS = os.environ.get("MAIL_PASS")
+MAIL_USE_TLS = True if MAIL_PORT == "587" else False
+MAIL_USE_SSL = True if MAIL_PORT == "465" else False

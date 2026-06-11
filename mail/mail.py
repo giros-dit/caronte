@@ -6,38 +6,36 @@ import os
 try:
     import data.serverConfig as config
 except:
-    print("No se ha definido un fichero de configuración para el envío de correo.")
+    print("Missing server configuration file.")
 
 def sendMail(to, subject, message):
-    try:
-        config
-    except:
-        return 1
-
+    
     if (message is None):
-        print("No se ha definido un mensaje.")
+        print("No message defined.")
         return 2
     
     msg = MIMEMultipart()
 
-    msg['From'] =  f'{config.MAIL_NAME} <{config.MAIL_USER}>'
+    msg['From'] =  f'{config.MAIL_FROM}'
     msg['To'] = to
     msg['Subject'] = subject
     
     msg.attach(MIMEText(message, 'html'))
-    
     server = smtplib.SMTP(f'{config.MAIL_SERVER}:{config.MAIL_PORT}')
-    server.starttls()
-    try:
-        server.login(config.MAIL_USER, config.MAIL_PASS)
-    except:
-        print("Error al iniciar sesión en el servidor.")
-        return 3
+
+    server.starttls() if config.MAIL_USE_TLS else None
+
+    if config.MAIL_USER and config.MAIL_PASS:
+        try:
+            server.login(config.MAIL_USER, config.MAIL_PASS)
+        except:
+            print("Login failed for SMTP server.")
+            return 3
     
     try:
         server.sendmail(msg['From'], msg['To'], msg.as_string())
     except:
-        print("Error al enviar el mensaje.")
+        print("Error sending email.")
         return 4
 
     server.quit()
@@ -53,5 +51,5 @@ def buildMessage(template, fields = {}):
 
             return content
     except:
-        print("Fallo al generar el mensaje.")
+        print("Failed to generate message.")
         return None
