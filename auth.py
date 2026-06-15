@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, login_required, logout_user, current_user
+from functools import wraps
 from datetime import timedelta
 
 from database import db_session
@@ -8,6 +9,18 @@ from models import User
 import data.serverConfig as config
 
 auth = Blueprint('auth', __name__)
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if current_user is None:
+            return redirect(url_for('login', next=request.url))
+        
+        if current_user.admin is False:
+            flash('You have no permission to access this resource.', category='error')
+            return redirect(url_for('views.index'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 @auth.route('/login', methods=['GET', 'POST'])
