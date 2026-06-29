@@ -5,10 +5,9 @@ from flask_oidc.signals import after_authorize
 from functools import wraps
 from datetime import timedelta
 
-from app import oidc
+from app import oidc, config
 from database import db_session
 from models import User
-import data.serverConfig as config
 
 auth = Blueprint('auth', __name__)
 def admin_required(f):

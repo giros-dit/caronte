@@ -2,8 +2,7 @@ from flask import Blueprint, render_template, request, abort
 from flask_login import login_required, current_user
 
 from models import User, Machine, Ownership
-import data.serverConfig as config
-
+from app import config
 views = Blueprint('views', __name__)
 
 @views.route('/', methods=['GET'])
@@ -15,7 +14,7 @@ def index():
             owner = Ownership.query.filter_by(user_id = current_user.id).all()
             for machine in owner:
                 machines.append(Machine.query.get(machine.machine_id))
-        return render_template('index.html', TITLE=config.TITLE, machines=machines, isAdmin=current_user.admin)
+        return render_template('index.html', TITLE=config['TITLE'], machines=machines, isAdmin=current_user.admin)
 
 
 @views.route('/machines', methods=['GET'])
@@ -24,7 +23,7 @@ def machines():
     if current_user.admin:
         if request.method == 'GET':
             machines = Machine.query.all()
-            return render_template('machines.html', machines=machines, TITLE=config.TITLE, isAdmin=current_user.admin)  
+            return render_template('machines.html', machines=machines, TITLE=config['TITLE'], isAdmin=current_user.admin)  
     else:
         abort(403)
 
@@ -38,7 +37,7 @@ def users():
         if request.method == "GET":
 
             users = User.query.all()
-            return render_template('users/main.html', users=users, TITLE=config.TITLE, isAdmin=current_user.admin, currentUserId=current_user.id)
+            return render_template('users/main.html', users=users, TITLE=config['TITLE'], isAdmin=current_user.admin, currentUserId=current_user.id)
 
     else:
         abort(403)
@@ -55,6 +54,6 @@ def user_machines(user_id):
             owned_machines = []
             for machine in ownerships:
                 owned_machines.append(machine.machine_id)
-            return render_template('ownership.html', user_email=user_email, machines=machines, owned_machines=owned_machines, TITLE=config.TITLE, isAdmin=current_user.admin)
+            return render_template('ownership.html', user_email=user_email, machines=machines, owned_machines=owned_machines, TITLE=config['TITLE'], isAdmin=current_user.admin)
     else:
         abort(403)

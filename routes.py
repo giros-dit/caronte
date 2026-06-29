@@ -9,7 +9,7 @@ import os
 from models import User, Machine, Ownership
 from database import db_session
 import mail.mail as mail
-import data.serverConfig as config
+from app import config
 
 routes = Blueprint('routes', __name__)
 

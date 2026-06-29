@@ -11,7 +11,7 @@ from views import views
 from routes import routes
 from routers.users import users as usersRouter
 
-import data.serverConfig as config
+from app import config
 
 login_manager = LoginManager()
 
@@ -35,7 +35,7 @@ if users == []:
         print(f"Default 'admin' user created with password: {adminPassword} \n\n")
 
 
-app.secret_key = config.SECRET
+app.secret_key = config['SECRET']
 app.register_blueprint(auth) 
 app.register_blueprint(views)
 app.register_blueprint(routes)
