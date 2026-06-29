@@ -29,10 +29,7 @@ def get_user(userId):
 @admin_required
 def edit_user(userId):
     user = User.query.get(userId)
-    
-    if user.external:
-        return flash('Cannot edit external users.', category='error'), 405
-    
+       
     if user:
         return render_template('users/editableRow.html', user=user, TITLE=config.TITLE, isAdmin=current_user.admin)
     else:
@@ -77,29 +74,29 @@ def update_user(userId):
     
     # Update user data.
     elif request.method == 'PUT':
-        updatedUsername = request.form.get('username')
-        updatedEmail = request.form.get('email')
-        updatedAdmin = True if request.form.get('admin') else False
-        
-        if updatedUsername == None:
-            return flash('Username is required.', category='error'), 400
-            
-        if updatedEmail == None:
-            return flash('Email is required.', category='error'), 400
-        
-        regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-
-        if not (re.fullmatch(regex, updatedEmail)):
-            return flash('Email address is not valid.', category='error'), 400
-
         user = User.query.filter_by(id=userId).first()
-
         if user:
-            if user.external:
-                return flash('Cannot edit external users.', category='error'), 405
+            if not user.external:
+                updatedUsername = request.form.get('username')
+                updatedEmail = request.form.get('email')
+                
+                if updatedUsername == None:
+                    return flash('Username is required.', category='error'), 400
+                    
+                if updatedEmail == None:
+                    return flash('Email is required.', category='error'), 400
+                
+                regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+
+                if not (re.fullmatch(regex, updatedEmail)):
+                    return flash('Email address is not valid.', category='error'), 400
+            
+            updatedAdmin = True if request.form.get('admin') else False
+                        
             try:
-                user.username = updatedUsername
-                user.email = updatedEmail
+                if not user.external:
+                    user.username = updatedUsername
+                    user.email = updatedEmail
                 user.admin = updatedAdmin or False
                 db_session.commit()
                 return render_template('users/row.html', user=user, TITLE=config.TITLE, isAdmin=current_user.admin)
