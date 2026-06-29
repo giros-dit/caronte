@@ -9,4 +9,4 @@ app = Flask(__name__)
 config = dotenv_values()
 app.config.from_mapping(config)
 
-oidc = OpenIDConnect(app, prefix='/oidc')
+oidc = OpenIDConnect(app, prefix=config['OIDC_PATH_PREFIX'] if 'OIDC_PATH_PREFIX' in config else None)
