@@ -15,7 +15,7 @@
             hx-target="closest tr"><i class="bi bi-trash-fill"></i></a>
 
         {% if not user['external'] %}
-        <a href="#" class="pass" hx-patch="/users/{{ user['id'] }}/password" hx-target="none"><i
+        <a href="#" hx-patch="/users/{{ user['id'] }}" hx-swap="none"><i
                 class="bi bi-unlock2-fill"></i></a>
         {% endif %}
         <a href="#" hx-get="/users/{{ user['id'] }}/edit" hx-trigger="edit" onClick="let editing = document.querySelector('.editing')

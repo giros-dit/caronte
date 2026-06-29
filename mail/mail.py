@@ -4,43 +4,41 @@ import smtplib
 import os
 
 try:
-    import data.serverConfig as config
+    from app import config
 except:
     print("Missing server configuration file.")
 
 def sendMail(to, subject, message):
     
     if (message is None):
-        print("No message defined.")
-        return 2
+        raise Exception("Message is empty.")
     
     msg = MIMEMultipart()
 
-    msg['From'] =  f'{config.MAIL_FROM}'
+    msg['From'] =  f'{config["MAIL_FROM"]}'
     msg['To'] = to
     msg['Subject'] = subject
     
     msg.attach(MIMEText(message, 'html'))
-    server = smtplib.SMTP(f'{config.MAIL_SERVER}:{config.MAIL_PORT}')
+    server = smtplib.SMTP(f'{config["MAIL_SERVER"]}:{config["MAIL_PORT"]}')
 
-    server.starttls() if config.MAIL_USE_TLS else None
+    server.starttls() if config['MAIL_USE_TLS'] else None
 
-    if config.MAIL_USER and config.MAIL_PASS:
+    if config['MAIL_USER'] and config['MAIL_PASS']:
         try:
-            server.login(config.MAIL_USER, config.MAIL_PASS)
+            server.login(config['MAIL_USER'], config['MAIL_PASS'])
         except:
-            print("Login failed for SMTP server.")
-            return 3
+            raise Exception("Error logging in to mail server.")
     
     try:
         server.sendmail(msg['From'], msg['To'], msg.as_string())
-    except:
-        print("Error sending email.")
-        return 4
+    except Exception as e:
+        print(e)
+        raise Exception("Error sending email.")
 
     server.quit()
 
-    return 0
+    return
 
 def buildMessage(template, fields = {}):
     try:
@@ -51,5 +49,4 @@ def buildMessage(template, fields = {}):
 
             return content
     except:
-        print("Failed to generate message.")
-        return None
+        raise Exception("Failed to generate message.")

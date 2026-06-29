@@ -52,7 +52,7 @@ def update_user(userId):
 
         if user:
             if user.external:
-                return flash('Cannot edit external users.', category='error'), 405
+                return flash('Cannot reset password for external users.', category='error'), 405
             
             try:
                 recoveryToken = os.urandom(64).hex()
@@ -62,10 +62,14 @@ def update_user(userId):
                 try:
                     mail.sendMail(
                         user.email,
-                        f"Reestablecimiento de contraseña en {config.SERVER_NAME}",
-                        mail.buildMessage('resetPassword', {'$RECOVERY_URL': f"{config.SERVER_URL}/reset-password?token={recoveryToken}"})
+                        f"Reestablecimiento de contraseña en {config['SERVER_NAME']}",
+                        mail.buildMessage('resetPassword', {'$RECOVERY_URL': f"{config['SERVER_URL']}/reset-password?token={recoveryToken}"})
                     )
-                except:
+                    
+                    flash('Password reset email sent successfully.', category='success')
+                    return '', 200
+                except Exception as e:
+                    print(e)
                     return flash('Error sending reset email.', category='error'), 500
             except:
                 return flash('Error generating recovery token.', category='error'), 500
@@ -119,9 +123,6 @@ def update_user(userId):
         else:
             return flash('User not found.', category='error'), 404
 
-
-
-
 @users.route('/users', methods=['POST'])
 @login_required
 @admin_required
@@ -150,7 +151,6 @@ def create_user():
             return flash('Error creating user.', category='error'), 500
     else:
         return flash('User not found.', category='error'), 404
-
 
 @users.route('/users/<int:userId>/machines', methods=['PUT', 'DELETE'])
 @login_required
