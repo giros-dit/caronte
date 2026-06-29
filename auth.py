@@ -33,6 +33,7 @@ def login():
             (User.username == user_id) |
             (User.email == user_id)
         ).first()
+        
         if user:
             if check_password_hash(user.password, password):
                 login_user(user, remember=remember, duration=timedelta(minutes=30))
@@ -41,21 +42,21 @@ def login():
                 flash('Contraseña incorrecta.', category='error')
         else:
             flash('El usuario o email especificado no está registrado.', category='error')
+            
     elif request.method == 'GET':
         if current_user.is_authenticated:
             return redirect(url_for('views.index'))
         else:
-            return render_template("login.html", TITLE=config.TITLE)     
+            return render_template("login.html", TITLE=config['TITLE'])     
 
 @auth.route('/logout')
 @login_required
 def logout():
-    logout_user()  # Limpia Flask-Login
+    logout_user()
     
-    # NUEVO: Limpia el estado de Flask-OIDC y destruye los tokens del servidor
     if hasattr(oidc, 'logout'):
         oidc.logout() 
-    session.clear()  # Borra por completo el contenido de Flask-Session
+    session.clear()
     
     return redirect(url_for('auth.login'))      
 
@@ -66,15 +67,24 @@ def handle_oidc_login(sender, **kwargs):
         username = user_info.get('sub')
         email = user_info.get('email')
 
-        if not email:
-            flash('El proveedor OIDC no ha devuelto un email válido.', category='error')
-            return
-
         user = User.query.filter_by(email=email).first()
+        
         if not user:
             user = User(username=username, email=email, external=True)
+        
+        else:
+            user.username = username
+            user.email = email
+            user.external = True
+            # User will be admin if they belong to any of the groups specified in OIDC_ADMIN_GROUPS
+            user.admin = any(group in user_info.get('groups', []) for group in config['OIDC_ADMIN_GROUPS'].split(' '))
+
+        try:
             db_session.add(user)
             db_session.commit()
+        except Exception as e:
+            flash('Error creating/updating user data.', category='error')
+            return redirect(url_for('auth.login'))
             
         login_user(user)
 
