@@ -15,7 +15,7 @@ import data.serverConfig as config
 
 login_manager = LoginManager()
 
-app = Flask(__name__)
+from app import app
 
 init_db()
 

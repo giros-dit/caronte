@@ -4,3 +4,5 @@ Flask-SQLAlchemy
 flask_login
 gunicorn
 Cython
+Flask-OIDC
+dotenv
