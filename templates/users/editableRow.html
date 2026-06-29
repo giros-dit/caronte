@@ -1,0 +1,21 @@
+<tr id="{{ user['id'] }}">
+    <td>
+        <input name="username" class="username" type="text" value="{{ user['username'] }}">
+    </td>
+    <td>
+        <input name="email" class="email" type="email" value="{{ user['email'] }}">
+    </td>
+    <td class="text-center">
+        <div class="form-check form-switch d-flex justify-content-center">
+            <input name="admin" class="form-check-input isAdmin" type="checkbox" {{'checked' if user['admin'] else '' }}>
+        </div>
+    </td>
+    <td class="text-center">
+        <button class="btn danger" hx-get="/users/{{ user['id'] }}">
+      Cancel
+    </button>
+    <button class="btn danger" hx-put="/users/{{ user['id'] }}" hx-include="closest tr">
+      Save
+    </button>
+    </td>
+</tr>

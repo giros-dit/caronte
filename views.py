@@ -10,15 +10,12 @@ views = Blueprint('views', __name__)
 @login_required
 def index():
     if request.method == 'GET':
-        if current_user.activated:
-            machines = []
-            if hasattr(current_user, 'admin'):
-                owner = Ownership.query.filter_by(user_id = current_user.id).all()
-                for machine in owner:
-                    machines.append(Machine.query.get(machine.machine_id))
-            return render_template('index.html', TITLE=config.TITLE, machines=machines, isAdmin=current_user.admin)
-        else:
-            return render_template('changePassword.html')
+        machines = []
+        if hasattr(current_user, 'admin'):
+            owner = Ownership.query.filter_by(user_id = current_user.id).all()
+            for machine in owner:
+                machines.append(Machine.query.get(machine.machine_id))
+        return render_template('index.html', TITLE=config.TITLE, machines=machines, isAdmin=current_user.admin)
 
 
 @views.route('/machines', methods=['GET'])
@@ -41,7 +38,7 @@ def users():
         if request.method == "GET":
 
             users = User.query.all()
-            return render_template('users.html', users=users, TITLE=config.TITLE, isAdmin=current_user.admin, currentUserId=current_user.id)
+            return render_template('users/main.html', users=users, TITLE=config.TITLE, isAdmin=current_user.admin, currentUserId=current_user.id)
 
     else:
         abort(403)

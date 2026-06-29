@@ -1,0 +1,21 @@
+<tr>
+    <td>
+        <input name="username" class="username" type="text" value="">
+    </td>
+    <td>
+        <input name="email" class="email" type="email" value="">
+    </td>
+    <td class="text-center">
+        <div class="form-check form-switch d-flex justify-content-center">
+            <input name="admin" class="form-check-input isAdmin" type="checkbox">
+        </div>
+    </td>
+    <td class="text-center">
+        <button class="btn danger">
+      Cancel
+    </button>
+    <button class="btn danger" hx-post="/users" hx-include="closest tr">
+      Save
+    </button>
+    </td>
+</tr>

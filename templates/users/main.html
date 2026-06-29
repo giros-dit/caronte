@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+
+{% block container %}
+<h3>Usuarios</h2>
+<div class="borderTable align-middle">
+  {% include "users/table.html" %}
+</div>
+{% endblock %}
+
+{% block user_info %}
+  {{ super() }}
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/userFunctions.js')}}"></script>
+{% endblock %}

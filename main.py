@@ -9,6 +9,8 @@ from models import User, Machine
 from auth import auth
 from views import views
 from routes import routes
+from routers.users import users as usersRouter
+
 import data.serverConfig as config
 
 login_manager = LoginManager()
@@ -37,6 +39,7 @@ app.secret_key = config.SECRET
 app.register_blueprint(auth) 
 app.register_blueprint(views)
 app.register_blueprint(routes)
+app.register_blueprint(usersRouter)
 
 login_manager.login_view = "auth.login"
 login_manager.login_message = None
