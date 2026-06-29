@@ -47,7 +47,7 @@ def login():
         if current_user.is_authenticated:
             return redirect(url_for('views.index'))
         else:
-            return render_template("login.html", TITLE=config['TITLE'])     
+            return render_template("login.html", SERVER_NAME=config['SERVER_NAME'])     
 
 @auth.route('/logout')
 @login_required

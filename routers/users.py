@@ -20,7 +20,7 @@ users = Blueprint('users', __name__)
 def get_user(userId):
     user = User.query.get(userId)
     if user:
-        return render_template('users/row.html', user=user, TITLE=config['TITLE'], isAdmin=current_user.admin)
+        return render_template('users/row.html', user=user, SERVER_NAME=config['SERVER_NAME'], isAdmin=current_user.admin)
     else:
         return flash('User not found.', category='error'), 404
         
@@ -31,7 +31,7 @@ def edit_user(userId):
     user = User.query.get(userId)
        
     if user:
-        return render_template('users/editableRow.html', user=user, TITLE=config['TITLE'], isAdmin=current_user.admin)
+        return render_template('users/editableRow.html', user=user, SERVER_NAME=config['SERVER_NAME'], isAdmin=current_user.admin)
     else:
         return flash('User not found.', category='error'), 404
 
@@ -39,7 +39,7 @@ def edit_user(userId):
 @login_required
 @admin_required
 def new_user():
-    return render_template('users/newRow.html', TITLE=config['TITLE'], isAdmin=current_user.admin), 200
+    return render_template('users/newRow.html', SERVER_NAME=config['SERVER_NAME'], isAdmin=current_user.admin), 200
 
 @users.route('/users/<int:userId>', methods=['PATCH', 'PUT', 'DELETE'])
 @login_required
@@ -103,7 +103,7 @@ def update_user(userId):
                     user.email = updatedEmail
                 user.admin = updatedAdmin or False
                 db_session.commit()
-                return render_template('users/row.html', user=user, TITLE=config['TITLE'], isAdmin=current_user.admin)
+                return render_template('users/row.html', user=user, SERVER_NAME=config['SERVER_NAME'], isAdmin=current_user.admin)
             except:
                 return flash('Error updating user data.', category='error'), 500
         else:
@@ -146,7 +146,7 @@ def create_user():
             db_session.add(user)
             db_session.commit()
             flash('User created successfully.', category='success')
-            return render_template('users/row.html', user=user, TITLE=config['TITLE'], isAdmin=current_user.admin), 200
+            return render_template('users/row.html', user=user, SERVER_NAME=config['SERVER_NAME'], isAdmin=current_user.admin), 200
         except:
             return flash('Error creating user.', category='error'), 500
     else:
