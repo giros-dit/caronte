@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, session
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash
 from flask_login import login_user, login_required, logout_user, current_user
 from flask_oidc.signals import after_authorize
 from functools import wraps
@@ -40,9 +40,11 @@ def login():
                 return redirect(url_for('views.index'))
             else:
                 flash('Contraseña incorrecta.', category='error')
+                return render_template("login.html", SERVER_NAME=config['SERVER_NAME']), 401
         else:
             flash('El usuario o email especificado no está registrado.', category='error')
-            
+            return render_template("login.html", SERVER_NAME=config['SERVER_NAME']), 404
+                        
     elif request.method == 'GET':
         if current_user.is_authenticated:
             return redirect(url_for('views.index'))

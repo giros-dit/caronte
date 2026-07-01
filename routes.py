@@ -14,39 +14,6 @@ from app import config
 routes = Blueprint('routes', __name__)
 
 
-
-
-@routes.route('/password', methods=['POST'])
-@login_required
-def password():
-    user = current_user
-    password = request.form.get('password')
-
-    if (password != request.form.get('confirmPassword')):
-        flash("Las contraseñas no coinciden.")
-        return render_template('changePassword.html')
-    
-    if os.environ.get('ENV') != "development":
-        if (check_password_hash(user.password, password)):
-            flash("No puedes utilizar la misma contraseña de nuevo.")
-            return render_template('changePassword.html')
-
-    try:
-        User.setPassword(user,password)
-        user.activated = True
-        db_session.commit()
-
-        try:
-            mail.sendMail(user.email, f"Se ha actualizado tu contraseña en {config.SERVER_NAME}", mail.buildMessage('updatedPassword', {'$ADMIN_MAIL': config.ADMIN_MAIL}))
-        except:
-            print("Error al enviar el email de confirmación de activación de la cuenta.")
-        finally:
-            return redirect(url_for('views.index'))
-
-    except:
-        return render_template('changePassword.html', error="Ha ocurrido un error.")
-
-
 @routes.route('/machines', methods=['POST', 'PUT'])
 @login_required
 def machines():

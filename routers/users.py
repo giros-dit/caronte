@@ -1,16 +1,13 @@
-from flask import Blueprint, request, abort, redirect, url_for, render_template, flash
-from flask_login import login_required, current_user
-from werkzeug.security import check_password_hash
+from flask import Blueprint, request, abort, redirect, url_for, render_template, flash, session
+from flask_login import login_required, current_user, logout_user
 from auth import admin_required
-import random
-import string
 import re
 import os
 
 from models import User, Machine, Ownership
 from database import db_session
 import mail.mail as mail
-from app import config
+from app import config, oidc
 
 users = Blueprint('users', __name__)
 
@@ -41,12 +38,41 @@ def edit_user(userId):
 def new_user():
     return render_template('users/newRow.html', SERVER_NAME=config['SERVER_NAME'], isAdmin=current_user.admin), 200
 
+@users.route('/users', methods=['POST'])
+@login_required
+@admin_required
+def create_user():
+    newUsername = request.form.get('username')
+    newEmail = request.form.get('email')
+    newAdmin = True if request.form.get('admin') else False
+    
+    if newUsername == None:
+        return flash('Username is required.', category='error'), 400
+        
+    if newEmail == None:
+        return flash('Email is required.', category='error'), 400
+    
+    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+    if not (re.fullmatch(regex, newEmail)):
+        return flash('Email address is not valid.', category='error'), 400
+    user = User(username=newUsername, email=newEmail, admin=newAdmin or False)
+    if user:
+        try:
+            db_session.add(user)
+            db_session.commit()
+            flash('User created successfully.', category='success')
+            return render_template('users/row.html', user=user, SERVER_NAME=config['SERVER_NAME'], isAdmin=current_user.admin), 200
+        except:
+            return flash('Error creating user.', category='error'), 500
+    else:
+        return flash('User not found.', category='error'), 404
+
 @users.route('/users/<int:userId>', methods=['PATCH', 'PUT', 'DELETE'])
 @login_required
 @admin_required
 def update_user(userId):
     
-    # Reset user password.
+    # Request password reset for user.
     if request.method == 'PATCH':
         user = User.query.filter_by(id=userId).first()
 
@@ -55,7 +81,7 @@ def update_user(userId):
                 return flash('Cannot reset password for external users.', category='error'), 405
             
             try:
-                recoveryToken = os.urandom(64).hex()
+                recoveryToken = os.urandom(32).hex()
                 User.setRecoveryToken(user, recoveryToken)
                 db_session.commit()                
 
@@ -123,34 +149,58 @@ def update_user(userId):
         else:
             return flash('User not found.', category='error'), 404
 
-@users.route('/users', methods=['POST'])
-@login_required
-@admin_required
-def create_user():
-    newUsername = request.form.get('username')
-    newEmail = request.form.get('email')
-    newAdmin = True if request.form.get('admin') else False
-    
-    if newUsername == None:
-        return flash('Username is required.', category='error'), 400
+@users.route('/reset-password', methods=['GET', 'POST'])
+def reset_password():        
+    if request.method == 'GET':
+        token = request.args.get('token')
+        user = User.query.filter_by(recovery_token=token).first()
         
-    if newEmail == None:
-        return flash('Email is required.', category='error'), 400
+        if user:
+            return render_template('changePassword.html', SERVER_NAME=config['SERVER_NAME'], token=token)
+        else:
+            flash("Invalid or expired token.")
+            return redirect(url_for('views.index'))
+
     
-    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-    if not (re.fullmatch(regex, newEmail)):
-        return flash('Email address is not valid.', category='error'), 400
-    user = User(username=newUsername, email=newEmail, admin=newAdmin or False)
-    if user:
+    elif request.method == 'POST':
+        token = request.form.get('token')
+        user = User.query.filter_by(recovery_token=token).first()
+        
+        if not user:
+            flash("Invalid or expired token.")
+            return redirect(url_for('views.index'))
+        
+        password = request.form.get('password')
+        confirmPassword = request.form.get('confirmPassword')
+
+        if not password or not confirmPassword:
+            flash("Both password fields are required.")
+            return render_template('changePassword.html', token=token)
+
+        if password != confirmPassword:
+            flash("Passwords do not match.")
+            return render_template('changePassword.html', token=token)
+        
+    try:
+        user.setPassword(password)
+        user.setRecoveryToken(None)  # Clear the recovery token after successful password reset
+
+        db_session.commit()
+
         try:
-            db_session.add(user)
-            db_session.commit()
-            flash('User created successfully.', category='success')
-            return render_template('users/row.html', user=user, SERVER_NAME=config['SERVER_NAME'], isAdmin=current_user.admin), 200
-        except:
-            return flash('Error creating user.', category='error'), 500
-    else:
-        return flash('User not found.', category='error'), 404
+            mail.sendMail(
+                user.email,
+                f"Contraseña actualizada en {config['SERVER_NAME']}",
+                mail.buildMessage('updatedPassword')
+            )
+        except Exception as e:
+            print(e)
+            return flash('Error sending reset email.', category='error'), 500
+
+    except:
+        return render_template('changePassword.html', error="Ha ocurrido un error.", token=token)
+    
+    return redirect(url_for('views.index'))
 
 @users.route('/users/<int:userId>/machines', methods=['PUT', 'DELETE'])
 @login_required

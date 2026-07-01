@@ -13,7 +13,7 @@ class User(UserMixin, Base):
     password = Column((String(100)), nullable=True)
     admin = Column(Boolean, default=False)
     external = Column(Boolean, default=False)
-    recoveryToken = Column(String(100), nullable=True)
+    recovery_token = Column(String(100), nullable=True)
 
     owns = relationship("Ownership", cascade="all, delete")
 
@@ -25,7 +25,7 @@ class User(UserMixin, Base):
         self.password = generate_password_hash(password) if password else None
 
     def __repr__(self):
-        user_json = {"id": self.id, "username": self.username, "email": self.email, "password": self.password, "admin": self.admin, "recoveryToken": self.recoveryToken, "external": self.external}
+        user_json = {"id": self.id, "username": self.username, "email": self.email, "password": self.password, "admin": self.admin, "recovery_token": self.recovery_token, "external": self.external}
         return str(user_json)
     
     def setUsername(self,username):
@@ -41,7 +41,7 @@ class User(UserMixin, Base):
         self.password = generate_password_hash(password)
         
     def setRecoveryToken(self,token):
-        self.recoveryToken = token
+        self.recovery_token = token
 
 class Machine(Base):
     __tablename__ = 'machines'
