@@ -60,16 +60,16 @@ def login():
                 return redirect(url_for('views.index'))
             else:
                 flash('Contraseña incorrecta.', category='error')
-                return render_template("login.html", SERVER_NAME=config['SERVER_NAME']), 401
+                return render_template("login.html"), 401
         else:
             flash('El usuario o email especificado no está registrado.', category='error')
-            return render_template("login.html", SERVER_NAME=config['SERVER_NAME']), 404
+            return render_template("login.html"), 404
                         
     elif request.method == 'GET':
         if current_user.is_authenticated:
             return redirect(url_for('views.index'))
         else:
-            return render_template("login.html", SERVER_NAME=config['SERVER_NAME'])     
+            return render_template("login.html")     
 
 @auth.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
@@ -87,10 +87,10 @@ def forgot_password():
                 return redirect(url_for('auth.login'))
         else:
             flash('El email especificado no está registrado.', category='error')
-            return render_template("forgot_password.html", SERVER_NAME=config['SERVER_NAME']), 404
+            return render_template("forgot_password.html"), 404
         
     elif request.method == 'GET':
-        return render_template("forgot_password.html", SERVER_NAME=config['SERVER_NAME'])
+        return render_template("forgot_password.html")
 
 @auth.route('/logout')
 @login_required

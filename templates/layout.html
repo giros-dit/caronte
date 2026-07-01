@@ -17,7 +17,7 @@
       let theme = localStorage.getItem('wol.theme') || 'light';
       root.setAttribute('color-scheme', `${theme}`);
     </script>
-    <title>{{ SERVER_NAME }}</title>
+    <title>{{ config['SERVER_NAME'] }}</title>
     {% endblock %}
   </head>
 
@@ -25,7 +25,7 @@
     <button class="theme" role="switch" aria-label="Cambiar tema"></button>
     <div class="container" style="position: relative;">
     <div id="logoCaronte" ></div>
-      {% if isAdmin %}
+      {% if current_user.admin %}
         {% block admin_menu %}
           <a id="linkIndex" href="{{ url_for('views.index')}}">Inicio</a>
           <a id="linkMachines" href="{{ url_for('views.machines')}}">Máquinas</a>

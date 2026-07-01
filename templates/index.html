@@ -47,7 +47,4 @@
 
 {% block scripts %}
   {{ super() }}
-  {% if isAdmin %}
-    <script type="text/javascript">$(document).ready(checkUpdates('{{ currentVersion }}'))</script>
-  {% endif %}
 {% endblock %}

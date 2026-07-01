@@ -16,7 +16,7 @@ users = Blueprint('users', __name__)
 def get_user(userId):
     user = User.query.get(userId)
     if user:
-        return render_template('users/row.html', user=user, SERVER_NAME=config['SERVER_NAME'], isAdmin=current_user.admin)
+        return render_template('users/row.html', user=user)
     else:
         return flash('User not found.', category='error'), 404
         
@@ -27,7 +27,7 @@ def edit_user(userId):
     user = User.query.get(userId)
        
     if user:
-        return render_template('users/editableRow.html', user=user, SERVER_NAME=config['SERVER_NAME'], isAdmin=current_user.admin)
+        return render_template('users/editableRow.html', user=user)
     else:
         return flash('User not found.', category='error'), 404
 
@@ -35,7 +35,7 @@ def edit_user(userId):
 @login_required
 @admin_required
 def new_user():
-    return render_template('users/newRow.html', SERVER_NAME=config['SERVER_NAME'], isAdmin=current_user.admin), 200
+    return render_template('users/newRow.html'), 200
 
 @users.route('/users', methods=['POST'])
 @login_required
@@ -46,21 +46,24 @@ def create_user():
     newAdmin = True if request.form.get('admin') else False
     
     if newUsername == None:
-        return flash('Username is required.', category='error'), 400
+        flash('Username is required.', category='error')
+        return '', 400
         
     if newEmail == None:
-        return flash('Email is required.', category='error'), 400
+        flash('Email is required.', category='error')
+        return '', 400
     
     regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
     if not (re.fullmatch(regex, newEmail)):
-        return flash('Email address is not valid.', category='error'), 400
+        flash('Email address is not valid.', category='error')
+        return '', 400
     user = User(username=newUsername, email=newEmail, admin=newAdmin or False)
     if user:
         try:
             db_session.add(user)
             db_session.commit()
             flash('User created successfully.', category='success')
-            return render_template('users/row.html', user=user, SERVER_NAME=config['SERVER_NAME'], isAdmin=current_user.admin), 200
+            return render_template('users/row.html', user=user), 200
         except:
             return flash('Error creating user.', category='error'), 500
     else:
@@ -112,7 +115,7 @@ def update_user(userId):
                     user.email = updatedEmail
                 user.admin = updatedAdmin or False
                 db_session.commit()
-                return render_template('users/row.html', user=user, SERVER_NAME=config['SERVER_NAME'], isAdmin=current_user.admin)
+                return render_template('users/row.html', user=user)
             except:
                 return flash('Error updating user data.', category='error'), 500
         else:
@@ -139,7 +142,7 @@ def reset_password():
         user = User.query.filter_by(recovery_token=token).first()
         
         if user:
-            return render_template('change_password.html', SERVER_NAME=config['SERVER_NAME'], token=token)
+            return render_template('change_password.html', token=token)
         else:
             flash("Invalid or expired token.")
             return redirect(url_for('views.index'))
