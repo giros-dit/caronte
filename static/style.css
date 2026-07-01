@@ -9,8 +9,8 @@
     --inputBackground-light: #FFFFFF;
     --filterBackground-light: #b6b6b6;
     --inputBorder-light: #383838;
-    --linkColor-light: #256aa6;
-    --linkColorHover-light: #3ea6ff;
+    --linkColor-light: #000000;
+    --linkColorHover-light: #808080;
     --clickableItemColor-light: #337AB7;
     --btnAndPageno-light: #337AB7;
     --navBorder-light: #FFF;
@@ -26,8 +26,8 @@
     --inputBackground-dark: #181818;
     --filterBackground-dark: #212121;
     --inputBorder-dark: #383838;
-    --linkColor-dark: #3ea6ff;
-    --linkColorHover-dark: #3ec2ff;
+    --linkColor-dark: #e8e8e8;
+    --linkColorHover-dark: #808080;
     --clickableItemColor-dark: #3ea6ff;
     --btnAndPageno-dark: #337ab7;
     --navBorder-dark: #383838;
@@ -148,15 +148,18 @@ body{
     transition: background 0.5s ease, color 0.5s ease;
     font-family: 'Roboto', sans-serif; 
 }
+
 #particles-js {
     background-color: var(--backgroundColors);
     color: var(--textColors);
 }
+
 input{
     background-color: var(--inputBackground);
     color: var(--textColors);
     border-color: var(--inputBorder);
 }
+
 input:focus{
     background-color: var(--inputBackground);
     color: var(--textColors);
@@ -174,6 +177,19 @@ a:hover {
     text-decoration: none;
 }
 
+.input-group-text{
+    padding: 0.25rem 0.5rem;
+}
+
+.input-group-text .bi {
+    font-size: 23px;
+}
+
+a .bi {
+    font-size: 20px;
+    color: var(--clickableItemColor);
+}
+
 a .bi:hover {
     color: var(--linkColorHover);
     background-color: transparent;
@@ -181,10 +197,12 @@ a .bi:hover {
 }
 
 .bi-check-circle-fill{
+    font-size: 20px;
     color: green!important;
 }
 
 .bi-x-circle-fill{
+    font-size: 20px;
     color: red!important;
 }
 
@@ -202,10 +220,12 @@ a .bi:hover {
 .container{
     padding-top: 20px;
 }
+
 #equipos{
     padding-top: 10px;
     padding-bottom: 10px;
 }
+
 .page-item .page-link {
     background-color: var(--navBorder);
     border-color: var(--navBorder);
@@ -236,11 +256,6 @@ a .bi:hover {
 .powerOnIcon, .trashIcon, .plusIcon, .icon{
     height: 25px;
     fill: var(--clickableItemColor);
-}
-
-.bi {
-    font-size: 20px;
-    color: var(--clickableItemColor);
 }
 
 .saveIcon{
