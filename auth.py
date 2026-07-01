@@ -4,12 +4,15 @@ from flask_login import login_user, login_required, logout_user, current_user
 from flask_oidc.signals import after_authorize
 from functools import wraps
 from datetime import timedelta
+import os
 
 from app import oidc, config
 from database import db_session
 from models import User
+import mail.mail as mail
 
 auth = Blueprint('auth', __name__)
+
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -22,12 +25,29 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def generate_recovery_token(user):
+    try:
+        recoveryToken = os.urandom(32).hex()
+        user.setRecoveryToken(recoveryToken)
+        db_session.commit()                
+        try:
+            mail.sendMail(
+                user.email,
+                f"Reestablecimiento de contraseña en {config['SERVER_NAME']}",
+                mail.buildMessage('resetPassword', {'$RECOVERY_URL': f"{config['SERVER_URL']}/reset-password?token={recoveryToken}"})
+            )
+
+            return True
+        except Exception as e:
+            raise Exception("Error sending reset email.")
+    except:
+        raise Exception("Error generating recovery token.")
+
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         user_id = request.form.get('user_id')
         password = request.form.get('password')
-        remember = True if request.form.get('remember') != None else False
 
         user = User.query.filter(
             (User.username == user_id) |
@@ -36,7 +56,7 @@ def login():
         
         if user:
             if check_password_hash(user.password, password):
-                login_user(user, remember=remember, duration=timedelta(minutes=30))
+                login_user(user, duration=timedelta(minutes=30))
                 return redirect(url_for('views.index'))
             else:
                 flash('Contraseña incorrecta.', category='error')
@@ -50,6 +70,27 @@ def login():
             return redirect(url_for('views.index'))
         else:
             return render_template("login.html", SERVER_NAME=config['SERVER_NAME'])     
+
+@auth.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        user_id = request.form.get('user_id')
+        
+        user = User.query.filter(
+            (User.username == user_id) |
+            (User.email == user_id)
+        ).first()   
+             
+        if user:
+            if generate_recovery_token(user):
+                flash('Se ha enviado un correo electrónico para restablecer la contraseña.', category='success')
+                return redirect(url_for('auth.login'))
+        else:
+            flash('El email especificado no está registrado.', category='error')
+            return render_template("forgot_password.html", SERVER_NAME=config['SERVER_NAME']), 404
+        
+    elif request.method == 'GET':
+        return render_template("forgot_password.html", SERVER_NAME=config['SERVER_NAME'])
 
 @auth.route('/logout')
 @login_required

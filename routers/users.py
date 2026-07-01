@@ -1,13 +1,12 @@
 from flask import Blueprint, request, abort, redirect, url_for, render_template, flash, session
-from flask_login import login_required, current_user, logout_user
-from auth import admin_required
+from flask_login import login_required, current_user
 import re
-import os
 
 from models import User, Machine, Ownership
 from database import db_session
+from auth import admin_required, generate_recovery_token
 import mail.mail as mail
-from app import config, oidc
+from app import config
 
 users = Blueprint('users', __name__)
 
@@ -71,7 +70,6 @@ def create_user():
 @login_required
 @admin_required
 def update_user(userId):
-    
     # Request password reset for user.
     if request.method == 'PATCH':
         user = User.query.filter_by(id=userId).first()
@@ -80,25 +78,10 @@ def update_user(userId):
             if user.external:
                 return flash('Cannot reset password for external users.', category='error'), 405
             
-            try:
-                recoveryToken = os.urandom(32).hex()
-                User.setRecoveryToken(user, recoveryToken)
-                db_session.commit()                
-
-                try:
-                    mail.sendMail(
-                        user.email,
-                        f"Reestablecimiento de contraseña en {config['SERVER_NAME']}",
-                        mail.buildMessage('resetPassword', {'$RECOVERY_URL': f"{config['SERVER_URL']}/reset-password?token={recoveryToken}"})
-                    )
-                    
-                    flash('Password reset email sent successfully.', category='success')
-                    return '', 200
-                except Exception as e:
-                    print(e)
-                    return flash('Error sending reset email.', category='error'), 500
-            except:
-                return flash('Error generating recovery token.', category='error'), 500
+            if generate_recovery_token(user):
+                flash('Password reset email sent successfully.', category='success')
+                return '', 200
+            
         else:
             return flash('User not found.', category='error'), 404
     
@@ -156,7 +139,7 @@ def reset_password():
         user = User.query.filter_by(recovery_token=token).first()
         
         if user:
-            return render_template('changePassword.html', SERVER_NAME=config['SERVER_NAME'], token=token)
+            return render_template('change_password.html', SERVER_NAME=config['SERVER_NAME'], token=token)
         else:
             flash("Invalid or expired token.")
             return redirect(url_for('views.index'))
@@ -175,11 +158,11 @@ def reset_password():
 
         if not password or not confirmPassword:
             flash("Both password fields are required.")
-            return render_template('changePassword.html', token=token)
+            return render_template('change_password.html', token=token)
 
         if password != confirmPassword:
             flash("Passwords do not match.")
-            return render_template('changePassword.html', token=token)
+            return render_template('change_password.html', token=token)
         
     try:
         user.setPassword(password)
@@ -198,7 +181,7 @@ def reset_password():
             return flash('Error sending reset email.', category='error'), 500
 
     except:
-        return render_template('changePassword.html', error="Ha ocurrido un error.", token=token)
+        return render_template('change_password.html', error="Ha ocurrido un error.", token=token)
     
     return redirect(url_for('views.index'))
 
