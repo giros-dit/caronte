@@ -1,9 +1,9 @@
 <tr>
     <td>
-        <input name="username" class="username" type="text" value="">
+        <input class="form-control" name="username" class="username" type="text" value="">
     </td>
     <td>
-        <input name="email" class="email" type="email" value="">
+        <input class="form-control" name="email" class="email" type="email" value="">
     </td>
     <td class="text-center">
         <div class="form-check form-switch d-flex justify-content-center">
@@ -11,7 +11,7 @@
         </div>
     </td>
     <td class="text-center">
-        <button class="btn danger">
+        <button class="btn danger" hx-swap="delete" hx-target="closest tr" hx-trigger="click" hx-get="#">
       Cancel
     </button>
     <button class="btn danger" hx-post="/users" hx-include="closest tr">

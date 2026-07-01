@@ -1,9 +1,9 @@
 <tr id="{{ user['id'] }}">
     <td>
-        <input name="username" class="username" type="text" value="{{ user['username'] }}" {{'disabled' if user['external'] else '' }}>
+        <input class="form-control" name="username" class="username" type="text" value="{{ user['username'] }}" {{'disabled' if user['external'] else '' }}>
     </td>
     <td>
-        <input name="email" class="email" type="email" value="{{ user['email'] }}" {{'disabled' if user['external'] else '' }}>
+        <input class="form-control" name="email" class="email" type="email" value="{{ user['email'] }}" {{'disabled' if user['external'] else '' }}>
     </td>
     <td class="text-center">
         <div class="form-check form-switch d-flex justify-content-center">
