@@ -109,18 +109,19 @@ def handle_oidc_login(sender, **kwargs):
         
         username = user_info.get('sub')
         email = user_info.get('email')
+        admin = any(group in user_info.get('groups', []) for group in config['OIDC_ADMIN_GROUPS'].split(' '))
 
         user = User.query.filter_by(email=email).first()
         
         if not user:
-            user = User(username=username, email=email, external=True)
+            user = User(username=username, email=email, external=True, admin=admin)
         
         else:
             user.username = username
             user.email = email
             user.external = True
             # User will be admin if they belong to any of the groups specified in OIDC_ADMIN_GROUPS
-            user.admin = any(group in user_info.get('groups', []) for group in config['OIDC_ADMIN_GROUPS'].split(' '))
+            user.admin = admin
 
         try:
             db_session.add(user)
