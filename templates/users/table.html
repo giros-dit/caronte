@@ -1,23 +1,21 @@
-  <table id="users" class="table table-striped table-hover" style="width:100%">
-    <thead>
-      <tr>
-        <th>Username</th>
-        <th>Email</th>
-        <th class="text-center">&nbsp;&nbsp;&nbsp;Admin</th>
-        <th class="text-center">&nbsp;&nbsp;&nbsp;Manage</th>
-      </tr>
-    </thead>
-    <tbody id="table-contents" hx-target="closest tr" hx-swap="outerHTML">
-      {% for user in users: %}
-        {% include "users/row.html" %}
-      {% endfor %}
-    </tbody>
-    <tfoot>
-      <tr id="add">
-        <td colspan="100%" class="text-center">
-          <a href="#" hx-get="/users/new" hx-target="#table-contents" hx-swap="beforeend"><i
-                class="bi bi-plus-circle-fill"></i></a>
-        </td>
-      </tr>
-    </tfoot>
-  </table>
+<table id="users" class="table table-striped table-hover" style="width:100%">
+  <thead>
+    <tr>
+      <th>Username</th>
+      <th>Email</th>
+      <th class="text-center">&nbsp;&nbsp;&nbsp;Admin</th>
+      <th class="text-center">&nbsp;&nbsp;&nbsp;Manage</th>
+    </tr>
+  </thead>
+  <tbody id="table-contents">
+    {% include "users/table_contents.html" %}
+  </tbody>
+  <tfoot>
+    <tr id="add">
+      <td colspan="100%" class="text-center">
+        <a href="#" hx-get="/users/new" hx-target="#table-contents" hx-swap="beforeend"><i
+            class="bi bi-plus-circle-fill"></i></a>
+      </td>
+    </tr>
+  </tfoot>
+</table>

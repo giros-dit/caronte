@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, request, abort
 from flask_login import login_required, current_user
 
+from auth import admin_required
 from models import User, Machine, Ownership
-from app import config
 views = Blueprint('views', __name__)
 
 @views.route('/', methods=['GET'])
@@ -17,7 +17,7 @@ def index():
         return render_template('index.html', machines=machines)
 
 
-@views.route('/machines', methods=['GET'])
+@views.route('/admin/machines', methods=['GET'])
 @login_required
 def machines():
     if current_user.admin:
@@ -28,22 +28,14 @@ def machines():
         abort(403)
 
 
-@views.route('/users', methods=['GET'])
+@views.route('/admin/users', methods=['GET'])
 @login_required
+@admin_required
 def users():
-    if current_user.admin:
-        
-        # Recupera los datos de todos los usuarios.
-        if request.method == "GET":
+    users = User.query.all()
+    return render_template('users/main.html', users=users)
 
-            users = User.query.all()
-            return render_template('users/main.html', users=users, currentUserId=current_user.id)
-
-    else:
-        abort(403)
-
-
-@views.route('/users/<int:user_id>/machines', methods=['GET'])
+@views.route('/admin/users/<int:user_id>/machines', methods=['GET'])
 @login_required
 def user_machines(user_id):
     if current_user.admin:
