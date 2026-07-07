@@ -1,0 +1,31 @@
+<tr id="{{ machine['id'] }}">
+<td>
+    <input class="form-control" name="name" class="name" type="text" value="{{ machine['name'] }}">
+</td>
+<td>
+    <input class="form-control" name="mac" class="mac" type="text" 
+    value="{{ machine['mac'] }}">
+</td>
+<td>
+    <input class="form-control" name="ip" class="ip" type="text" value="{{ machine['ip'] }}">
+</td>
+<td>
+    <input class="form-control" name="port" class="port" type="number" length="5" value="{{ machine['port'] }}">
+</td>
+<td class="text-center">
+    <div class="buttonCell">
+        <a href="#" onclick="wakeMachine($(this), '/wol/{{ machine.id }}');"><i class="bi bi-power"></i></a>
+        <a href="#" onclick="requestPing($(this), '/ping/{{ machine.id }}');"><i class="bi bi-question-circle"></i></a>
+    </div>
+</td>
+<td class="text-center">
+    <div class="buttonCell">
+        <a href="#" hx-put="/machines/{{ machine['id'] }}" hx-include="closest tr" hx-target="closest tr" hx-swap="outerHTML">
+            <i class="bi bi-floppy2"></i>
+        </a>
+        <a href="#" hx-get="/machines/{{ machine['id'] }}" hx-confirm="Are you sure you want to cancel?" hx-target="closest tr" hx-swap="outerHTML">
+            <i class="bi bi-x-lg"></i>
+        </a>
+    </div>
+</td>
+</tr>

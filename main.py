@@ -8,8 +8,8 @@ from database import init_db, db_session
 from models import User, Machine
 from auth import auth
 from views import views
-from routes import routes
 from routers.users import users as usersRouter
+from routers.machines import machines as machinesRouter
 
 from app import config
 
@@ -38,9 +38,8 @@ if users == []:
 app.secret_key = config['SECRET']
 app.register_blueprint(auth) 
 app.register_blueprint(views)
-app.register_blueprint(routes)
 app.register_blueprint(usersRouter)
-
+app.register_blueprint(machinesRouter)
 login_manager.login_view = "auth.login"
 login_manager.login_message = None
 login_manager.init_app(app)

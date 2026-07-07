@@ -23,7 +23,7 @@ def machines():
     if current_user.admin:
         if request.method == 'GET':
             machines = Machine.query.all()
-            return render_template('machines.html', machines=machines)  
+            return render_template('machines/main.html', machines=machines)  
     else:
         abort(403)
 

@@ -1,0 +1,30 @@
+<tr id="new">
+    <td>
+        <input class="form-control" name="name" class="name" type="text" value="">
+    </td>
+    <td>
+        <input class="form-control" name="mac" class="mac" type="text" pattern="([0-9A-Fa-f]{2}[:\-]){5}[0-9A-Fa-f]{2}"
+            value="">
+    </td>
+    <td>
+        <input class="form-control" name="ip" class="ip" type="text" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
+            value="">
+    </td>
+    <td>
+        <input class="form-control short-input" name="port" class="port" type="number" length="5" value="">
+    </td>
+    <td class="text-center">
+
+    </td>
+    <td class="text-center">
+        <div class="buttonCell">
+            <a href="#" hx-post="/machines" hx-include="closest tr" hx-target="closest tr" hx-swap="outerHTML">
+                <i class="bi bi-floppy2"></i>
+            </a>
+            <a href="#" hx-swap="delete" hx-swap="delete" hx-target="closest tr" hx-trigger="click" hx-get="#"
+                hx-confirm="Are you sure you want to cancel?">
+                <i class="bi bi-x-lg"></i>
+            </a>
+        </div>
+    </td>
+</tr>

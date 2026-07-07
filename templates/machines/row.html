@@ -1,0 +1,46 @@
+<tr id="{{ machine['id'] }}">
+    <td>
+        <p class="name">{{ machine['name'] }}</p>
+    </td>
+    <td>
+        <p class="mac">{{ machine['mac'] }}</p>
+    </td>
+    <td>
+        <p class="ip">{{ machine['ip'] }}</p>
+    </td>
+    <td>
+        <p class="port">{{ machine['port'] }}</p>
+    </td>
+    <td class="text-center">
+        <div class="buttonCell">
+            <a href="#" onclick="wakeMachine($(this), '/wol/{{ machine.id }}');"><i class="bi bi-power"></i></a>
+            <a href="#" onclick="requestPing($(this), '/ping/{{ machine.id }}');"><i
+                    class="bi bi-question-circle"></i></a>
+        </div>
+    </td>
+    <td class="text-center">
+        <div class="buttonCell">
+
+            <a href="#" hx-get="/machines/{{ machine['id'] }}/edit" hx-trigger="edit" hx-target="closest tr"
+                hx-swap="outerHTML" onClick="let editing = document.querySelector('.editing')
+                         if(editing) {
+                           Swal.fire({title: 'Already Editing',
+                                      showCancelButton: true,
+                                      confirmButtonText: 'Yep, Edit This Row!',
+                                      text:'Hey!  You are already editing a row!  Do you want to cancel that edit and continue?'})
+                           .then((result) => {
+                                if(result.isConfirmed) {
+                                   htmx.trigger(editing, 'cancel')
+                                   htmx.trigger(this, 'edit')
+                                }
+                            })
+                         } else {
+                            htmx.trigger(this, 'edit')
+                         }">
+                <i class="bi bi-pencil-square"></i>
+                <a href="#" hx-delete="/machines/{{ machine['id'] }}"
+                    hx-confirm="Are you sure you want to delete this machine?" hx-target="closest tr"><i
+                        class="bi bi-trash-fill"></i></a>
+        </div>
+    </td>
+</tr>

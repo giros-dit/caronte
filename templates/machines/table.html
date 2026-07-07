@@ -1,0 +1,23 @@
+<table id="machines" class="table table-striped table-hover" style="width:100%">
+  <thead>
+    <tr>
+      <th>Nombre</th>
+      <th>Dirección MAC</th>
+      <th>Dirección IP</th>
+      <th>Puerto</th>
+      <th class="text-center">&nbsp;&nbsp;&nbsp;Estado</th>
+      <th class="text-center">&nbsp;&nbsp;&nbsp;Editar</th>
+    </tr>
+  </thead>
+  <tbody id="table-contents">
+    {% include "machines/table_contents.html" %}
+  </tbody>
+  <tfoot>
+    <tr id="add">
+      <td colspan="100%" class="text-center">
+        <a href="#" hx-get="/machines/new" hx-target="#table-contents" hx-swap="beforeend"><i
+            class="bi bi-plus-circle-fill"></i></a>
+      </td>
+    </tr>
+  </tfoot>
+</table>
