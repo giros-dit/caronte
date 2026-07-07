@@ -1,5 +1,5 @@
-from flask import Flask, request, redirect, url_for, render_template
-from flask_login import login_required, LoginManager, current_user
+from flask import request, redirect, url_for
+from flask_login import login_required, LoginManager
 
 import os
 from subprocess import run, PIPE

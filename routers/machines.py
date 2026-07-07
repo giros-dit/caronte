@@ -1,4 +1,4 @@
-from flask import Blueprint, request, render_template, flash, session
+from flask import Blueprint, request, render_template, flash
 from flask_login import login_required
 import re
 

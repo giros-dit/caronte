@@ -1,8 +1,8 @@
-from flask import Blueprint, request, abort, redirect, url_for, render_template, flash, session
+from flask import Blueprint, request, abort, redirect, url_for, render_template, flash
 from flask_login import login_required, current_user
 import re
 
-from models import User, Machine, Ownership
+from models import User, Ownership
 from database import db_session
 from auth import admin_required, generate_recovery_token
 import mail.mail as mail
