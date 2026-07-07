@@ -11,11 +11,14 @@
         </div>
     </td>
     <td class="text-center">
-        <button class="btn danger" hx-swap="delete" hx-target="closest tr" hx-trigger="click" hx-get="#">
-      Cancel
-    </button>
-    <button class="btn danger" hx-post="/users" hx-include="closest tr">
-      Save
-    </button>
+        <div class="buttonCell">
+            <a href="#" hx-post="/users" hx-include="closest tr" hx-target="closest tr" hx-swap="outerHTML">
+                <i class="bi bi-floppy2"></i>
+            </a>
+            <a href="#" hx-swap="delete" hx-swap="delete" hx-target="closest tr" hx-trigger="click" hx-get="#"
+                hx-confirm="Are you sure you want to cancel?">
+                <i class="bi bi-x-lg"></i>
+            </a>
+        </div>
     </td>
 </tr>

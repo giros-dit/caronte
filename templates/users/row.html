@@ -1,23 +1,22 @@
-<td>
-    <p class="username">{{ user['username'] }}</p>
-</td>
-<td>
-    <p class="email">{{ user['email'] }}</p>
-</td>
-<td class="text-center">
-    {% if user['admin'] %}<i class="bi bi-check-circle-fill"></i>{% else %}<i class="bi bi-x-circle-fill"></i>{%
-    endif %}
-</td>
-<td class="text-center">
-    <a href="/users/{{ user['id'] }}/machines"><i class="bi bi-pc-display"></i></a>
-    <a href="#" hx-delete="/users/{{ user['id'] }}" hx-confirm="Are you sure you want to delete this user?"
-        hx-target="closest tr"><i class="bi bi-trash-fill"></i></a>
-
-    {% if not user['external'] %}
-    <a href="#" hx-patch="/users/{{ user['id'] }}" hx-swap="none"><i class="bi bi-unlock2-fill"></i></a>
-    {% endif %}
-    <a href="#" hx-get="/users/{{ user['id'] }}/edit" hx-trigger="edit" hx-target="closest tr" hx-swap="innerHTML"
-        onClick="let editing = document.querySelector('.editing')
+<tr id="{{ user['id'] }}">
+    <td>
+        <p class="username">{{ user['username'] }}</p>
+    </td>
+    <td>
+        <p class="email">{{ user['email'] }}</p>
+    </td>
+    <td class="text-center">
+        {% if user['admin'] %}<i class="bi bi-check-circle-fill"></i>{% else %}<i class="bi bi-x-circle-fill"></i>{%
+        endif %}
+    </td>
+    <td class="text-center">
+        <div class="buttonCell">
+            <a href="/users/{{ user['id'] }}/machines"><i class="bi bi-pc-display"></i></a>
+            {% if not user['external'] %}
+            <a href="#" hx-patch="/users/{{ user['id'] }}" hx-swap="none"><i class="bi bi-unlock2-fill"></i></a>
+            {% endif %}
+            <a href="#" hx-get="/users/{{ user['id'] }}/edit" hx-trigger="edit" hx-target="closest tr"
+                hx-swap="outerHTML" onClick="let editing = document.querySelector('.editing')
                          if(editing) {
                            Swal.fire({title: 'Already Editing',
                                       showCancelButton: true,
@@ -32,6 +31,10 @@
                          } else {
                             htmx.trigger(this, 'edit')
                          }">
-        <i class="bi bi-pencil-square"></i>
-    </a>
-</td>
+                <i class="bi bi-pencil-square"></i>
+            </a>
+            <a href="#" hx-delete="/users/{{ user['id'] }}" hx-confirm="Are you sure you want to delete this user?"
+                hx-target="closest tr"><i class="bi bi-trash-fill"></i></a>
+        </div>
+    </td>
+</tr>
