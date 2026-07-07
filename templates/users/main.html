@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block container %}
-<h3>Usuarios</h2>
+<h3>Usuarios</h3>
 <div class="borderTable align-middle">
   <input type="text" id="search" name="search" class="form-control" placeholder="Buscar..."
          hx-get="/users/search" hx-swap="innerHTML" hx-target="#table-contents" 
