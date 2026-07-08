@@ -10,7 +10,7 @@ from app import config
 
 users = Blueprint('users', __name__)
 
-@users.route('/users/<int:userId>', methods=['GET'])
+@users.route('/admin/users/<int:userId>', methods=['GET'])
 @login_required
 @admin_required
 def get_user(userId):
@@ -20,7 +20,7 @@ def get_user(userId):
     else:
         return flash('User not found.', category='error'), 404
         
-@users.route('/users/<int:userId>/edit', methods=['GET'])
+@users.route('/admin/users/<int:userId>/edit', methods=['GET'])
 @login_required
 @admin_required
 def edit_user(userId):
@@ -31,13 +31,13 @@ def edit_user(userId):
     else:
         return flash('User not found.', category='error'), 404
 
-@users.route('/users/new', methods=['GET'])
+@users.route('/admin/users/new', methods=['GET'])
 @login_required
 @admin_required
 def new_user():
     return render_template('users/new_row.html'), 200
 
-@users.route('/users', methods=['POST'])
+@users.route('/admin/users', methods=['POST'])
 @login_required
 @admin_required
 def create_user():
@@ -69,7 +69,7 @@ def create_user():
     else:
         return flash('User not found.', category='error'), 404
 
-@users.route('/users/search', methods=['GET'])
+@users.route('/admin/users/search', methods=['GET'])
 @login_required
 @admin_required
 def search_users():
@@ -83,7 +83,7 @@ def search_users():
     
     return render_template('users/table_contents.html', users=users)
 
-@users.route('/users/<int:userId>', methods=['PATCH', 'PUT', 'DELETE'])
+@users.route('/admin/users/<int:userId>', methods=['PATCH', 'PUT', 'DELETE'])
 @login_required
 @admin_required
 def update_user(userId):
@@ -202,7 +202,7 @@ def reset_password():
     
     return redirect(url_for('views.index'))
 
-@users.route('/users/<int:userId>/machines', methods=['PUT', 'DELETE'])
+@users.route('/admin/users/<int:userId>/machines', methods=['PUT', 'DELETE'])
 @login_required
 def user_machines(userId):
     if current_user.admin:
