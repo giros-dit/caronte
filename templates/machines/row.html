@@ -21,7 +21,7 @@
     <td class="text-center">
         <div class="buttonCell">
 
-            <a href="#" hx-get="/machines/{{ machine['id'] }}/edit" hx-trigger="edit" hx-target="closest tr"
+            <a href="#" hx-get="/admin/machines/{{ machine['id'] }}/edit" hx-trigger="edit" hx-target="closest tr"
                 hx-swap="outerHTML" onClick="let editing = document.querySelector('.editing')
                          if(editing) {
                            Swal.fire({title: 'Already Editing',
@@ -38,7 +38,7 @@
                             htmx.trigger(this, 'edit')
                          }">
                 <i class="bi bi-pencil-square"></i>
-                <a href="#" hx-delete="/machines/{{ machine['id'] }}"
+                <a href="#" hx-delete="/admin/machines/{{ machine['id'] }}"
                     hx-confirm="Are you sure you want to delete this machine?" hx-target="closest tr"><i
                         class="bi bi-trash-fill"></i></a>
         </div>

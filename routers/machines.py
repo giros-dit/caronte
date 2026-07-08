@@ -8,7 +8,7 @@ from auth import admin_required
 
 machines = Blueprint('machines', __name__)
 
-@machines.route('/machines/<int:machineId>', methods=['GET'])
+@machines.route('/admin/machines/<int:machineId>', methods=['GET'])
 @login_required
 @admin_required
 def get_machine(machineId):
@@ -18,7 +18,7 @@ def get_machine(machineId):
     else:
         return flash('Machine not found.', category='error'), 404
 
-@machines.route('/machines/<int:machineId>/edit', methods=['GET'])
+@machines.route('/admin/machines/<int:machineId>/edit', methods=['GET'])
 @login_required
 @admin_required
 def edit_machine(machineId):
@@ -29,13 +29,13 @@ def edit_machine(machineId):
     else:
         return flash('Machine not found.', category='error'), 404
 
-@machines.route('/machines/new', methods=['GET'])
+@machines.route('/admin/machines/new', methods=['GET'])
 @login_required
 @admin_required
 def new_machine():
     return render_template('machines/new_row.html'), 200
 
-@machines.route('/machines', methods=['POST'])
+@machines.route('/admin/machines', methods=['POST'])
 @login_required
 @admin_required
 def create_machine():
@@ -99,7 +99,7 @@ def create_machine():
     else:
         return flash('Machine not found.', category='error'), 404
 
-@machines.route('/machines/search', methods=['GET'])
+@machines.route('/admin/machines/search', methods=['GET'])
 @login_required
 @admin_required
 def search_machines():
@@ -112,7 +112,7 @@ def search_machines():
     
     return render_template('machines/table_contents.html', machines=machines)
 
-@machines.route('/machines/<int:machineId>', methods=['PUT', 'DELETE'])
+@machines.route('/admin/machines/<int:machineId>', methods=['PUT', 'DELETE'])
 @login_required
 @admin_required
 def update_machine(machineId):
