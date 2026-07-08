@@ -10,6 +10,7 @@ from auth import auth
 from views import views
 from routers.users import users as usersRouter
 from routers.machines import machines as machinesRouter
+from routers.ownership import ownership as ownershipRouter
 
 from app import config
 
@@ -40,6 +41,7 @@ app.register_blueprint(auth)
 app.register_blueprint(views)
 app.register_blueprint(usersRouter)
 app.register_blueprint(machinesRouter)
+app.register_blueprint(ownershipRouter)
 login_manager.login_view = "auth.login"
 login_manager.login_message = None
 login_manager.init_app(app)

@@ -35,17 +35,24 @@ def users():
     users = User.query.all()
     return render_template('users/main.html', users=users)
 
-@views.route('/admin/users/<int:user_id>/machines', methods=['GET'])
+@views.route('/admin/ownership/<int:userId>/machines', methods=['GET'])
 @login_required
-def user_machines(user_id):
+def user_machines(userId):
     if current_user.admin:
         if request.method == 'GET':
-            machines = Machine.query.all()
-            ownerships = Ownership.query.filter_by(user_id=user_id).all()
-            user = User.query.get(user_id).username
-            owned_machines = []
-            for machine in ownerships:
-                owned_machines.append(machine.machine_id)
-            return render_template('ownership.html', user=user, machines=machines, owned_machines=owned_machines)
+            user = User.query.get(userId)
+            if user:
+                machines = Machine.query.all()
+                
+                # Consulta limpia de IDs
+                ownerships = [o[0] for o in Ownership.query.filter_by(user_id=userId).with_entities(Ownership.machine_id).all()]
+
+                # Marcado con un atributo temporal nuevo
+                for machine in machines:
+                    machine.is_owned = machine.id in ownerships
+                
+                return render_template('ownership/main.html', user=user, machines=machines)
+            else:
+                return abort(404)
     else:
         abort(403)

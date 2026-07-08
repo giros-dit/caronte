@@ -1,0 +1,17 @@
+{% if machines: %}
+<table id="ownership" class="table table-striped table-dark table-hover" style="width:100%">
+  <thead>
+    <tr>
+      <th>Máquina</th>
+      <th class="text-center">&nbsp;&nbsp;&nbsp;Asignada</th>
+    </tr>
+  </thead>
+  <tbody id="table-contents">
+    {% include "ownership/table_contents.html" %}
+  </tbody>
+</table>
+{% else: %}
+<h4>No hay ninguna máquina en la base de datos, puedes añadirlas desde <a
+    href="{{ url_for('views.machines') }}">aquí</a></h4>
+{% endif %}
+</div>

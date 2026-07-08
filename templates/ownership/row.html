@@ -1,0 +1,16 @@
+<tr id="{{ machine['id'] }}">
+    <td>{{ machine['name'] }}</td>
+    <td class="text-center">
+        <div class="form-check form-switch d-flex justify-content-center">
+            <input class="form-check-input" type="checkbox"
+                hx-target="closest tr" hx-swap="outerHTML"
+                {% if machine['is_owned'] %}
+                    hx-delete="/admin/ownership/{{ user['id'] }}/machines/{{ machine['id'] }}"
+                    checked
+                {% else %}
+                    hx-put="/admin/ownership/{{ user['id'] }}/machines/{{ machine['id'] }}"
+                {% endif %}
+            >
+        </div>
+    </td>
+</tr>

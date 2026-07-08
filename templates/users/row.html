@@ -11,7 +11,7 @@
     </td>
     <td class="text-center">
         <div class="buttonCell">
-            <a href="/admin/users/{{ user['id'] }}/machines"><i class="bi bi-pc-display"></i></a>
+            <a href="/admin/ownership/{{ user['id'] }}/machines"><i class="bi bi-pc-display"></i></a>
             {% if not user['external'] %}
             <a href="#" hx-patch="/admin/users/{{ user['id'] }}" hx-swap="none"><i class="bi bi-unlock2-fill"></i></a>
             {% endif %}
