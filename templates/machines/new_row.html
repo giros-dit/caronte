@@ -18,13 +18,10 @@
     </td>
     <td class="text-center">
         <div class="buttonCell">
-            <a href="#" hx-post="/admin/machines" hx-include="closest tr" hx-target="closest tr" hx-swap="outerHTML">
-                <i class="bi bi-floppy2"></i>
-            </a>
-            <a href="#" hx-swap="delete" hx-swap="delete" hx-target="closest tr" hx-trigger="click" hx-get="#"
-                hx-confirm="Are you sure you want to cancel?">
-                <i class="bi bi-x-lg"></i>
-            </a>
+            <i class="bi bi-floppy2 clickable-button" hx-post="/admin/machines" hx-include="closest tr"
+                hx-target="closest tr" hx-swap="outerHTML"></i>
+            <i class="bi bi-x-lg clickable-button" hx-swap="delete" hx-swap="delete" hx-target="closest tr"
+                hx-trigger="click" hx-get="#" hx-confirm="Are you sure you want to cancel?"></i>
         </div>
     </td>
 </tr>

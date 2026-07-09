@@ -3,8 +3,8 @@
     <tr>
       <th>Usuario</th>
       <th>Email</th>
-      <th class="text-center">&nbsp;&nbsp;&nbsp;Admin</th>
-      <th class="text-center">&nbsp;&nbsp;&nbsp;Editar</th>
+      <th class="text-center">Admin</th>
+      <th class="text-center">Editar</th>
     </tr>
   </thead>
   <tbody id="table-contents">
@@ -13,8 +13,7 @@
   <tfoot>
     <tr id="add">
       <td colspan="100%" class="text-center">
-        <a href="#" hx-get="/admin/users/new" hx-target="#table-contents" hx-swap="beforeend"><i
-            class="bi bi-plus-circle-fill"></i></a>
+        <i class="bi bi-plus-circle-fill clickable-button" hx-get="/admin/users/new" hx-target="#table-contents" hx-swap="beforeend"></i>
       </td>
     </tr>
   </tfoot>

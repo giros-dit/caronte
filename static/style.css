@@ -185,16 +185,7 @@ a:hover {
     font-size: 23px;
 }
 
-a .bi {
-    font-size: 20px;
-    color: var(--clickableItemColor);
-}
 
-a .bi:hover {
-    color: var(--linkColorHover);
-    background-color: transparent;
-    text-decoration: none;
-}
 
 .bi-check-circle-fill{
     font-size: 20px;
@@ -204,6 +195,85 @@ a .bi:hover {
 .bi-x-circle-fill{
     font-size: 20px;
     color: red!important;
+}
+
+@-ms-keyframes spin {
+    from { -ms-transform: rotate(0deg); }
+    to { -ms-transform: rotate(360deg); }
+}
+@-moz-keyframes spin {
+    from { -moz-transform: rotate(0deg); }
+    to { -moz-transform: rotate(360deg); }
+}
+@-webkit-keyframes spin {
+    from { -webkit-transform: rotate(0deg); }
+    to { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+    from {
+        transform:rotate(0deg);
+    }
+    to {
+        transform:rotate(360deg);
+    }
+}
+
+.action-toggle {
+    display: inline-block;
+    position: relative;
+}
+
+.action-toggle > span:first-child {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.action-toggle.is-loading > span:first-child,
+.action-toggle > span.htmx-request {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.spinning-indicator{
+    position: absolute;
+    inset: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    pointer-events: none;
+}
+
+.htmx-request .spinning-indicator,
+.htmx-request.spinning-indicator,
+.action-toggle.is-loading > .spinning-indicator,
+.action-toggle > span.htmx-request + .spinning-indicator{
+    opacity: 1;
+    visibility: visible;
+
+    -webkit-animation-name: spin;
+    -webkit-animation-duration: 900ms;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-timing-function: linear;
+    -moz-animation-name: spin;
+    -moz-animation-duration: 900ms;
+    -moz-animation-iteration-count: infinite;
+    -moz-animation-timing-function: linear;
+    -ms-animation-name: spin;
+    -ms-animation-duration: 900ms;
+    -ms-animation-iteration-count: infinite;
+    -ms-animation-timing-function: linear;
+    
+    animation-name: spin;
+    animation-duration: 900ms;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+    
 }
 
 .borderTable{
@@ -245,35 +315,6 @@ a .bi:hover {
     color: var(--navTextColors) !important;
 }
 
-.dataTables_filter > label > input{
-    background-color: var(--filterBackground);
-}
-
-.dataTables_filter > label > input :focus{
-    background-color: var(--filterBackground) !important;
-}
-
-.powerOnIcon, .trashIcon, .plusIcon, .icon{
-    height: 25px;
-    fill: var(--clickableItemColor);
-}
-
-.saveIcon{
-    width: 20px;
-    fill: var(--clickableItemColor);
-}
-.iconRed{
-    width: 20px;
-    fill: #eb1e1e;
-}
-.iconRedX{
-    height: 21px;
-    fill: #eb1e1e;
-}
-.iconGreen{
-    width: 20px;
-    fill: #47f444;
-}
 .grayIcon{
     width: 20px;
     fill: #565656;
@@ -385,4 +426,20 @@ td {
     flex-direction: row;
     justify-content: space-evenly;
     align-items: center;
+}
+
+.clickable-button {
+    font-size: 20px;
+    color: var(--clickableItemColor);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+}
+
+.clickable-button:hover {
+    color: var(--linkColorHover);
+    background-color: transparent;
+    text-decoration: none;
 }

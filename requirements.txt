@@ -6,3 +6,5 @@ gunicorn
 Cython
 Flask-OIDC
 dotenv
+ping3
+wakeonlan
