@@ -17,7 +17,7 @@ class User(UserMixin, Base):
 
     owns = relationship("Ownership", cascade="all, delete")
 
-    def __init__(self, username, email=None, admin=False, password=None, external=False):
+    def __init__(self, username, email=None, admin=False, service=False, password=None, external=False):
         self.username = username
         self.email = email
         self.admin = admin

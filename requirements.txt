@@ -8,3 +8,4 @@ Flask-OIDC
 dotenv
 ping3
 wakeonlan
+requests

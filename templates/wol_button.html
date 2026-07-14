@@ -1,5 +1,5 @@
 <span id="wol-button-{{ machine.id}}" class="action-toggle">
-    <span hx-put="/api/wol/{{ machine.id }}" hx-indicator="#wol-indicator-{{ machine.id }}" hx-target="#wol-button-{{ machine.id }}"
+    <span hx-get="/api/wol/{{ machine.id }}" hx-indicator="#wol-indicator-{{ machine.id }}" hx-target="#wol-button-{{ machine.id }}"
         hx-swap="outerHTML" hx-on::before-request="this.closest('.action-toggle').classList.add('is-loading')" hx-on::after-request="this.closest('.action-toggle').classList.remove('is-loading')">
         {% if status %}
         <i class="bi bi-check-circle-fill clickable-button"></i>

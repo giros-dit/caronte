@@ -1,5 +1,6 @@
 from flask import Blueprint, request, render_template, flash
 from flask_login import login_required
+from auth import authentication_required, authorization_required
 
 import ping3, wakeonlan
 
@@ -9,8 +10,9 @@ ping3.EXCEPTIONS = True
 
 api = Blueprint('api', __name__)
 
-@api.route('/api/wol/<int:machineId>', methods=['PUT'])
-@login_required
+@api.route('/api/wol/<int:machineId>', methods=['GET'])
+@authentication_required
+@authorization_required
 def wol(machineId):
     machine = Machine.query.get(machineId)
     
@@ -22,7 +24,8 @@ def wol(machineId):
         return '', 204
 
 @api.route('/api/ping/<int:machineId>', methods=['GET'])
-@login_required
+@authentication_required
+@authorization_required
 def ping(machineId):
     machine = Machine.query.get(int(machineId))
     try:
