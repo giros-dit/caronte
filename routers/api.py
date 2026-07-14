@@ -1,4 +1,4 @@
-from flask import Blueprint, request, render_template, flash
+from flask import Blueprint, request, render_template, make_response, redirect, url_for
 from flask_login import login_required
 from auth import authentication_required, authorization_required
 
@@ -10,6 +10,16 @@ ping3.EXCEPTIONS = True
 
 api = Blueprint('api', __name__)
 
+@api.route('/api/test', methods=['GET'])
+@authentication_required
+def test():
+    response = make_response('', 200)
+    
+    if (request.headers.get('HX-Request') == 'true'):
+        response.headers['HX-Trigger-After-Settle'] = '''{"new-toast": {"type": "success", "message": "Test successful!", "title": "Success", "options": {}}}'''
+        
+    return response
+
 @api.route('/api/wol/<int:machineId>', methods=['GET'])
 @authentication_required
 @authorization_required
@@ -19,9 +29,13 @@ def wol(machineId):
     wakeonlan.wake(machine.mac, host=machine.ip , port=machine.port)
 
     if (request.headers.get('HX-Request') == 'true'):
-        return render_template('wol_button.html', machine=machine, status=True)
+        response = make_response(render_template('wol_button.html', machine=machine, status=True), 200)
+        response.headers['HX-Trigger-After-Settle'] = '''{"new-toast": {"type": "success", "message": "Paquete Wake-on-LAN enviado!", "options": {}}}'''
     else:
-        return '', 204
+        response = make_response('', 200)
+        
+    return response
+
 
 @api.route('/api/ping/<int:machineId>', methods=['GET'])
 @authentication_required
@@ -32,10 +46,17 @@ def ping(machineId):
         ping3.ping(machine.ip)
         
         if (request.headers.get('HX-Request') == 'true'):
-            return render_template('ping_button.html', machine=machine, status=True)
-        return '', 200
+            response = make_response(render_template('ping_button.html', machine=machine, status=True), 200)
+            response.headers['HX-Trigger-After-Settle'] = '''{"new-toast": {"type": "success", "message": "Máquina alcanzable", "options": {}}}'''
+        else:
+            response = make_response('', 200)
+            
     
     except:
         if (request.headers.get('HX-Request') == 'true'):
-            return render_template('ping_button.html', machine=machine, status=False)
-        return '', 404
+            response = make_response(render_template('ping_button.html', machine=machine, status=False), 200)
+            response.headers['HX-Trigger-After-Settle'] = '''{"new-toast": {"type": "error", "message": "Máquina no alcanzable", "options": {}}}'''
+        else:
+            response = make_response('', 404)
+    
+    return response
