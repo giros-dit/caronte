@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for, session
+from flask import Blueprint, render_template, request, flash, redirect, url_for, session, make_response
 from werkzeug.security import check_password_hash
 from flask_login import login_user, login_required, logout_user, current_user
 from flask_oidc.signals import after_authorize
@@ -46,19 +46,36 @@ def generate_recovery_token(user):
     try:
         recoveryToken = os.urandom(32).hex()
         user.setRecoveryToken(recoveryToken)
-        db_session.commit()                
-        try:
-            mail.sendMail(
-                user.email,
-                f"Reestablecimiento de contraseña en {config['SERVER_NAME']}",
-                mail.buildMessage('resetPassword', {'$RECOVERY_URL': f"{config['SERVER_URL']}/reset-password?token={recoveryToken}"})
-            )
-
-            return True
-        except Exception as e:
-            raise Exception("Error sending reset email.")
+        db_session.commit() 
+        
     except:
-        raise Exception("Error generating recovery token.")
+        response = make_response('', 500)
+        toast = {"type": "error",
+                 "message": "Se ha producido un error al generar el token de recuperación.",
+                 "title": "Error al generar token",
+                 "options": {}
+                }
+        response.headers['HX-Trigger-After-Settle'] = f'{{"new-toast": {json.dumps(toast)} }}'
+        raise RuntimeError(response)
+                   
+    try:
+        mail.sendMail(
+            user.email,
+            f"Reestablecimiento de contraseña en {config['SERVER_NAME']}",
+            mail.buildMessage('resetPassword', {'$RECOVERY_URL': f"{config['SERVER_URL']}/reset-password?token={recoveryToken}"})
+        )
+
+        return
+    except Exception as e:
+        response = make_response('', 500)
+        toast = {"type": "error",
+                    "message": "Se ha producido un error al enviar el correo de restablecimiento.",
+                    "title": "Error al enviar mensaje",
+                    "options": {}
+                }
+        response.headers['HX-Trigger-After-Settle'] = f'{{"new-toast": {json.dumps(toast)} }}'
+        raise RuntimeError(response)
+    
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():

@@ -15,10 +15,11 @@
     </td>
     <td class="text-center">
         <div class="buttonCell">
-            <i class="bi bi-floppy2 clickable-button" hx-put="/admin/users/{{ user['id'] }}" hx-include="closest tr"
-                hx-target="closest tr" hx-swap="outerHTML"></i>
-            <i class="bi bi-x-lg clickable-button" hx-get="/admin/users/{{ user['id'] }}"
-                hx-confirm="Are you sure you want to cancel?" hx-target="closest tr" hx-swap="outerHTML"></i>
+            {% set subpath = 'users' %}
+            {% set element = 'usuario' %}
+            {% set entity = user %}
+            {% include 'buttons/save.html' %}
+            {% include 'buttons/cancel.html' %}
         </div>
     </td>
 </tr>

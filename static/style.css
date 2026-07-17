@@ -418,7 +418,10 @@ th {
 td {
   text-align: center;
   justify-content: center;
+}
 
+td p {
+    margin: 0;
 }
 
 .buttonCell {

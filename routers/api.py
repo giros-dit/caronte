@@ -31,7 +31,7 @@ def wol(machineId):
     wakeonlan.wake(machine.mac, host=machine.ip , port=machine.port)
 
     if (request.headers.get('HX-Request') == 'true'):
-        response = make_response(render_template('wol_button.html', machine=machine, status=True), 200)
+        response = make_response(render_template('wol_button.html', machine=machine, status=True), 204)
         toast = {"type": "success",
                  "message": f"Paquete enviado a {machine.name}",
                  "title": "Paquete WoL enviado",
@@ -39,7 +39,7 @@ def wol(machineId):
                  }
         response.headers['HX-Trigger-After-Settle'] = '''{"new-toast": ''' + json.dumps(toast) + '''}'''
     else:
-        response = make_response('', 200)
+        response = make_response('', 204)
         
     return response
 
@@ -49,6 +49,7 @@ def wol(machineId):
 @authorization_required
 def ping(machineId):
     machine = Machine.query.get(int(machineId))
+    
     try:
         ping3.ping(machine.ip)
         

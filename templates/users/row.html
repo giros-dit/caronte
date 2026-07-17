@@ -6,35 +6,36 @@
         <p class="email">{{ user['email'] }}</p>
     </td>
     <td class="text-center">
-        {% if user['admin'] %}<i class="bi bi-check-circle-fill"></i>{% else %}<i class="bi bi-x-circle-fill"></i>{%
+        {% if user['admin'] %}<i class="bi bi-check-circle-fill"></i>{% else
+        %}<i class="bi bi-x-circle-fill"></i>{%
         endif %}
     </td>
     <td class="text-center">
         <div class="buttonCell">
-            <a href="/admin/ownership/{{ user['id'] }}/machines"><i class="bi bi-pc-display clickable-button"></i></a>
+            <a href="/admin/ownership/{{ user['id'] }}/machines"><i
+                    class="bi bi-pc-display clickable-button"></i></a>
             {% if not user['external'] %}
-            <i class="bi bi-unlock2-fill clickable-button" hx-patch="/admin/users/{{ user['id'] }}" hx-swap="none"></i>
-            {% endif %}
-            <i class="bi bi-pencil-square clickable-button" hx-get="/admin/users/{{ user['id'] }}/edit"
-                hx-trigger="edit" hx-target="closest tr" hx-swap="outerHTML" onClick="let editing = document.querySelector('.editing')
-                         if(editing) {
-                           Swal.fire({title: 'Already Editing',
-                                      showCancelButton: true,
-                                      confirmButtonText: 'Yep, Edit This Row!',
-                                      text:'Hey!  You are already editing a row!  Do you want to cancel that edit and continue?'})
-                           .then((result) => {
-                                if(result.isConfirmed) {
-                                   htmx.trigger(editing, 'cancel')
-                                   htmx.trigger(this, 'edit')
-                                }
-                            })
-                         } else {
-                            htmx.trigger(this, 'edit')
-                         }">
-            </i>
+            <span class="action-toggle">
+                <span
+                    hx-patch="/admin/users/{{ user['id'] }}"
+                    hx-indicator="#lock-indicator-{{ user['id'] }}"
+                    hx-swap="none"
+                    hx-on::before-request="this.closest('.action-toggle').classList.add('is-loading')"
+                    hx-on::after-request="this.closest('.action-toggle').classList.remove('is-loading')">
+                    <i class="bi bi-unlock2-fill clickable-button"></i>
+                </span>
 
-            <i class="bi bi-trash-fill clickable-button" hx-delete="/admin/users/{{ user['id'] }}"
-                hx-confirm="Are you sure you want to delete this user?" hx-target="closest tr"></i>
+                <i id="lock-indicator-{{ user['id'] }}"
+                    class="bi bi-arrow-clockwise clickable-button spinning-indicator"></i>
+            </span>
+            {% endif %}
+            
+            {% set subpath = 'users' %}
+            {% set element = 'usuario' %}
+            {% set entity = user %}
+            {% include 'buttons/edit.html' %}
+
+            {% include 'buttons/delete.html' %}
         </div>
     </td>
 </tr>

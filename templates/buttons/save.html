@@ -1,0 +1,19 @@
+<span class="action-toggle">
+    <span 
+        {% if entity is not none %}
+        hx-put="/admin/{{ subpath }}/{{ entity['id'] }}"
+        {% else %}
+        hx-post="/admin/{{ subpath }}"
+        {% endif %}
+        
+        hx-swap="outerHTML"
+        hx-include="closest tr"
+        hx-indicator="#save-indicator-{{ entity['id'] }}"
+        hx-target="closest tr"
+        hx-on::before-request="this.closest('.action-toggle').classList.add('is-loading')"
+        hx-on::after-request="this.closest('.action-toggle').classList.remove('is-loading')">
+        <i class="bi bi-floppy2 clickable-button"></i>
+    </span>
+
+    <i id="save-indicator-{{ entity['id'] or 'new' }}" class="bi bi-arrow-clockwise clickable-button spinning-indicator"></i>
+</span>

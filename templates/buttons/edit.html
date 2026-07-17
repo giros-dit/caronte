@@ -1,0 +1,24 @@
+<span class="action-toggle">
+    <span hx-get="/admin/{{ subpath }}/{{ entity['id'] }}/edit" hx-indicator="#edit-indicator-{{ entity['id'] }}" hx-trigger="edit"
+        hx-target="closest tr" hx-swap="outerHTML" onClick="let editing = document.querySelector('.editing')
+                         if(editing) {
+                           Swal.fire({title: 'Already Editing',
+                                      showCancelButton: true,
+                                      confirmButtonText: 'Yep, Edit This Row!',
+                                      text:'Hey!  You are already editing a row!  Do you want to cancel that edit and continue?'})
+                           .then((result) => {
+                                if(result.isConfirmed) {
+                                   htmx.trigger(editing, 'cancel')
+                                   htmx.trigger(this, 'edit')
+                                }
+                            })
+                         } else {
+                            htmx.trigger(this, 'edit')
+                         }" hx-on::before-request="this.closest('.action-toggle').classList.add('is-loading')"
+        hx-on::after-request="this.closest('.action-toggle').classList.remove('is-loading')">
+
+        <i class="bi bi-pencil-square clickable-button"></i>
+    </span>
+
+    <i id="edit-indicator-{{ entity['id'] }}" class="bi bi-arrow-clockwise clickable-button spinning-indicator"></i>
+</span>

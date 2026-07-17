@@ -1,12 +1,14 @@
-from flask import Blueprint, request, abort, redirect, url_for, render_template, flash
-from flask_login import login_required, current_user
-import re
+from flask import Blueprint, request, redirect, url_for, render_template, make_response
+from flask_login import login_required
 
-from models import User, Ownership
+import re, json
+
+from models import User
 from database import db_session
 from auth import admin_required, generate_recovery_token
 import mail.mail as mail
 from app import config
+from utils import *
 
 users = Blueprint('users', __name__)
 
@@ -14,22 +16,25 @@ users = Blueprint('users', __name__)
 @login_required
 @admin_required
 def get_user(userId):
-    user = User.query.get(userId)
-    if user:
-        return render_template('users/row.html', user=user)
-    else:
-        return flash('User not found.', category='error'), 404
-        
+    try:
+        user = getUser(userId)
+        response = make_response(render_template('users/row.html', user=user), 200)
+    except LookupError as e:
+        response = e.args[0]
+    
+    return response
+
 @users.route('/admin/users/<int:userId>/edit', methods=['GET'])
 @login_required
 @admin_required
 def edit_user(userId):
-    user = User.query.get(userId)
-       
-    if user:
-        return render_template('users/editable_row.html', user=user)
-    else:
-        return flash('User not found.', category='error'), 404
+    try:
+        user = getUser(userId)
+        response = make_response(render_template('users/editable_row.html', user=user), 200)
+    except LookupError as e:
+        response = e.args[0]
+    
+    return response
 
 @users.route('/admin/users/new', methods=['GET'])
 @login_required
@@ -45,29 +50,70 @@ def create_user():
     newEmail = request.form.get('email')
     newAdmin = True if request.form.get('admin') else False
     
-    if newUsername == None:
-        flash('Username is required.', category='error')
-        return '', 400
-        
-    if newEmail == None:
-        flash('Email is required.', category='error')
-        return '', 400
+    toasts = []
     
+    if newUsername == None or newUsername.strip() == "":
+        response = make_response('', 400)
+        
+        toast = {"type": "warning",
+                 "message": "El nombre de usuario es obligatorio.",
+                 "title": "Error al crear usuario",
+                 "options": {}
+                }
+
+        toasts.append(toast)
+
+    if newEmail == None or newEmail.strip() == "":
+        response = make_response('', 400)
+        
+        toast = {"type": "warning",
+                 "message": "El email es obligatorio.",
+                 "title": "Error al crear usuario",
+                 "options": {}
+                }
+        
+        toasts.append(toast)
+
     regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
     if not (re.fullmatch(regex, newEmail)):
-        flash('Email address is not valid.', category='error')
-        return '', 400
-    user = User(username=newUsername, email=newEmail, admin=newAdmin or False)
-    if user:
+        
+        toast = {"type": "warning",
+                 "message": "La dirección de email no es válida.",
+                 "title": "Error al crear usuario",
+                 "options": {}
+                }
+        
+        toasts.append(toast)
+        
+    if len(toasts) > 0:
+        response = make_response('', 400)
+        response.headers['HX-Trigger-After-Settle'] = f'{{"new-toast": {json.dumps(toasts)} }}'
+
+    else:
+        user = User(username=newUsername, email=newEmail, admin=newAdmin or False)
+        
         try:
             db_session.add(user)
             db_session.commit()
-            flash('User created successfully.', category='success')
-            return render_template('users/row.html', user=user), 200
+            toast = {"type": "success",
+                     "message": f"Usuario {user.username} creado exitosamente.",
+                     "title": "Usuario creado",
+                     "options": {}
+                    }
+            
+            response = make_response(render_template('users/row.html', user=user), 200)
         except:
-            return flash('Error creating user.', category='error'), 500
-    else:
-        return flash('User not found.', category='error'), 404
+            toast = {"type": "error",
+                     "message": f"Error al crear usuario {user.username}.",
+                     "title": "Error al crear usuario",
+                     "options": {}
+                    }
+            
+            response = make_response('', 500)
+            
+        response.headers['HX-Trigger-After-Settle'] = f'{{"new-toast": {json.dumps(toast)} }}'
+    
+    return response
 
 @users.route('/admin/users/search', methods=['GET'])
 @login_required
@@ -89,156 +135,210 @@ def search_users():
 def update_user(userId):
     # Request password reset for user.
     if request.method == 'PATCH':
-        user = User.query.filter_by(id=userId).first()
-
-        if user:
+        try:
+            user = getUser(userId)
+            
             if user.external:
-                return flash('Cannot reset password for external users.', category='error'), 405
+                toast = {"type": "warning",
+                         "message": "No se puede restablecer la contraseña de usuarios externos.",
+                         "title": "Acción no permitida",
+                         "options": {}
+                        }
+
+                response = make_response('', 405)
+
+            try:
+                generate_recovery_token(user)
+                toast = {"type": "success",
+                         "message": f"Email de restablecimiento de contraseña enviado exitosamente a {user.email}.",
+                         "title": "Mensaje enviado",
+                         "options": {}
+                        }
             
-            if generate_recovery_token(user):
-                flash('Password reset email sent successfully.', category='success')
-                return '', 200
+                response = make_response('', 200)
+                
+                response.headers['HX-Trigger-After-Settle'] = f'{{"new-toast": {json.dumps(toast)} }}'
             
-        else:
-            return flash('User not found.', category='error'), 404
+            except RuntimeError as e:
+                response = e.args[0]
+                
+        except LookupError as e:
+            response = e.args[0]       
+        
+        return response
     
     # Update user data.
     elif request.method == 'PUT':
-        user = User.query.filter_by(id=userId).first()
-        if user:
+        try:
+            user = getUser(userId)
+
             if not user.external:
                 updatedUsername = request.form.get('username')
                 updatedEmail = request.form.get('email')
+            
+                toasts = []
                 
-                if updatedUsername == None:
-                    return flash('Username is required.', category='error'), 400
+                if updatedUsername == None or updatedUsername.strip() == "":
+                    response = make_response('', 400)
+        
+                    toast = {"type": "warning",
+                            "message": "El nombre de usuario es obligatorio.",
+                            "title": "Error al editar usuario",
+                            "options": {}
+                            }
+
+                    toasts.append(toast)
                     
-                if updatedEmail == None:
-                    return flash('Email is required.', category='error'), 400
-                
+                if updatedEmail == None or updatedEmail.strip() == "":
+                    response = make_response('', 400)
+        
+                    toast = {"type": "warning",
+                            "message": "El correo electrónico es obligatorio.",
+                            "title": "Error al editar usuario",
+                            "options": {}
+                            }
+
+                    toasts.append(toast)
+
                 regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
 
                 if not (re.fullmatch(regex, updatedEmail)):
-                    return flash('Email address is not valid.', category='error'), 400
-            
-            updatedAdmin = True if request.form.get('admin') else False
+                    response = make_response('', 400)
+                    
+                    toast = {"type": "warning",
+                            "message": "La dirección de correo electrónico no es válida.",
+                            "title": "Error al editar usuario",
+                            "options": {}
+                            }
+                    
+                if len(toasts) > 0:
+                    response = make_response('', 400)
+                    response.headers['HX-Trigger-After-Settle'] = f'{{"new-toast": {json.dumps(toasts)} }}'
+                    
+                else:
+                    updatedAdmin = True if request.form.get('admin') else False
+                                
+                    try:
+                        if not user.external:
+                            user.username = updatedUsername
+                            user.email = updatedEmail
+                        user.admin = updatedAdmin or False
+                        db_session.commit()
                         
-            try:
-                if not user.external:
-                    user.username = updatedUsername
-                    user.email = updatedEmail
-                user.admin = updatedAdmin or False
-                db_session.commit()
-                return render_template('users/row.html', user=user)
-            except:
-                return flash('Error updating user data.', category='error'), 500
-        else:
-            return flash('User not found.', category='error'), 404
+                        response = make_response(render_template('users/row.html', user=user), 200)
+                        toast = {"type": "success",
+                                 "message": f"Usuario {user.username} actualizado correctamente.",
+                                 "title": "Usuario actualizado",
+                                 "options": {}
+                                }
+                    except:
+                        response = make_response('', 500)
+                        toast = {"type": "error",
+                                 "message": f"Error al actualizar usuario {user.username}.",
+                                 "title": "Error al actualizar usuario",
+                                 "options": {}
+                                }
+                    
+                    response.headers['HX-Trigger-After-Settle'] = f'{{"new-toast": {json.dumps(toast)} }}'
+         
+        except LookupError as e:
+            response = e.args[0]
+                               
+        return response
     
     # Remove user.
     elif request.method == 'DELETE':
-        user = User.query.filter_by(id=userId).first()
-        if user:
+        try:
+            user = getUser(userId)
+
             try:
                 db_session.delete(user)
                 db_session.commit()
-                flash('User deleted successfully.', category='success')
-                return ('', 200)
+                
+                response = make_response('', 200)
+                toast = {"type": "success",
+                         "message": f"Usuario {user.username} eliminado exitosamente.",
+                         "title": "Usuario eliminado",
+                         "options": {}
+                        }
+
             except:
-                return flash('Cannot delete user.', category='error'), 500
-        else:
-            return flash('User not found.', category='error'), 404
+                response = make_response('', 500)
+                toast = {"type": "error",
+                         "message": f"Error al eliminar usuario {user.username}.",
+                         "title": "Error al eliminar usuario",
+                         "options": {}
+                        }
+        
+            response.headers['HX-Trigger-After-Settle'] = f'{{"new-toast": {json.dumps(toast)} }}'
+            
+        except LookupError as e:
+            response = e.args[0]
+            
+        return response
 
 @users.route('/reset-password', methods=['GET', 'POST'])
 def reset_password():        
     if request.method == 'GET':
         token = request.args.get('token')
-        user = User.query.filter_by(recovery_token=token).first()
         
-        if user:
-            return render_template('change_password.html', token=token)
-        else:
-            flash("Invalid or expired token.")
-            return redirect(url_for('views.index'))
+        try:
+            user = getUserByToken(token)
+            return render_template('change_password.html', token=token), 200
+        
+        except LookupError as e:
+            response = e.args[0]
+            return response
 
     
     elif request.method == 'POST':
         token = request.form.get('token')
-        user = User.query.filter_by(recovery_token=token).first()
         
-        if not user:
-            flash("Invalid or expired token.")
-            return redirect(url_for('views.index'))
-        
-        password = request.form.get('password')
-        confirmPassword = request.form.get('confirmPassword')
-
-        if not password or not confirmPassword:
-            flash("Both password fields are required.")
-            return render_template('change_password.html', token=token)
-
-        if password != confirmPassword:
-            flash("Passwords do not match.")
-            return render_template('change_password.html', token=token)
-        
-    try:
-        user.setPassword(password)
-        user.setRecoveryToken(None)  # Clear the recovery token after successful password reset
-
-        db_session.commit()
-
         try:
-            mail.sendMail(
-                user.email,
-                f"Contraseña actualizada en {config['SERVER_NAME']}",
-                mail.buildMessage('updatedPassword')
-            )
-        except Exception as e:
-            print(e)
-            return flash('Error sending reset email.', category='error'), 500
+            user = getUserByToken(token)
 
-    except:
-        return render_template('change_password.html', error="Ha ocurrido un error.", token=token)
-    
-    return redirect(url_for('views.index'))
+            password = request.form.get('password')
+            confirmPassword = request.form.get('confirmPassword')
 
-@users.route('/admin/users/<int:userId>/machines', methods=['PUT', 'DELETE'])
-@login_required
-def user_machines(userId):
-    if current_user.admin:
+            if not password or not confirmPassword:
+                response = make_response(render_template('change_password.html', token=token), 400)
+                toast = {"type": "warning",
+                         "message": "Por favor, complete todos los campos.",
+                         "title": "Error al restablecer contraseña",
+                         "options": {}
+                        }
 
-        if request.method == 'PUT':
+            if password != confirmPassword:
+                response = make_response(render_template('change_password.html', token=token), 400)
+                toast = {"type": "warning",
+                         "message": "Las contraseñas no coinciden.",
+                         "title": "Error al restablecer contraseña",
+                         "options": {}
+                        }
+            
+            response.headers['HX-Trigger-After-Settle'] = f'{{"new-toast": {json.dumps(toast)} }}'
+
             try:
-                new_ownership = Ownership(user_id=userId, machine_id=request.json["machine_id"])
-                db_session.add(new_ownership)
-                db_session.commit()
-                response = {
-                    'code': 0,
-                    'isOwned': 1
-                }
-            except:
-                response = {
-                    'code': 1,
-                    'message': "Error añadiendo propiedad a la máquina {request.json['machine_id']}."
-                }
-            return response
+                user.setPassword(password)
+                user.setRecoveryToken(None)  # Clear the recovery token after successful password reset
 
-        elif request.method == 'DELETE':
-            try:
-                ownership = Ownership.query.filter_by(user_id = userId, machine_id=request.json["machine_id"]).first()
-                if ownership:
-                    db_session.delete(ownership)
                 db_session.commit()
-                response = {
-                    'code': 0,
-                    'isOwned': 0
-                }
-            except:
-                response = {
-                    'code': 1,
-                    'message': f"Error eliminando la propiedad de la máquina {request.json['machine_id']}."
-                }
-            return response
 
-    else:
-        abort(403)
+                try:
+                    mail.sendMail(
+                        user.email,
+                        f"Contraseña actualizada en {config['SERVER_NAME']}",
+                        mail.buildMessage('updatedPassword')
+                    )
+                except Exception as e:
+                    print(e)
+                    response = make_response(redirect(url_for('views.index')), 200)
+
+            except:
+                response = make_response(render_template('change_password.html', token=token), 400)
+                    
+        except LookupError as e:
+            response = e.args[0]
+            
+            
+    return response

@@ -20,7 +20,7 @@ def sendMail(to, subject, message):
     msg['Subject'] = subject
     
     msg.attach(MIMEText(message, 'html'))
-    server = smtplib.SMTP(f'{config["MAIL_SERVER"]}:{config["MAIL_PORT"]}')
+    server = smtplib.SMTP(host=config["MAIL_SERVER"], port=config["MAIL_PORT"], timeout=10)
 
     server.starttls() if config['MAIL_USE_TLS'] else None
 

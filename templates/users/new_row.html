@@ -12,10 +12,11 @@
     </td>
     <td class="text-center">
         <div class="buttonCell">
-            <i class="bi bi-floppy2 clickable-button" hx-post="/admin/users" hx-include="closest tr"
-                hx-target="closest tr" hx-swap="outerHTML"></i>
-            <i class="bi bi-x-lg clickable-button" hx-swap="delete" hx-swap="delete" hx-target="closest tr"
-                hx-trigger="click" hx-get="#" hx-confirm="Are you sure you want to cancel?"></i>
+            {% set subpath = 'users' %}
+            {% set element = 'usuario' %}
+            {% set entity = none %}
+            {% include 'buttons/save.html' %}
+            {% include 'buttons/cancel.html' %}
             </a>
         </div>
     </td>

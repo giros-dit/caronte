@@ -1,0 +1,10 @@
+<span class="action-toggle">
+    <span hx-delete="/admin/{{ subpath }}/{{ entity['id'] }}" hx-indicator="#delete-indicator-{{ entity['id'] }}" hx-swap="delete"
+        hx-target="closest tr" hx-confirm="¿Estás seguro de que quieres eliminar este {{ element }}?"
+        hx-on::before-request="this.closest('.action-toggle').classList.add('is-loading')"
+        hx-on::after-request="this.closest('.action-toggle').classList.remove('is-loading')">
+        <i class="bi bi-trash-fill clickable-button"></i>
+    </span>
+
+    <i id="delete-indicator-{{ entity['id'] }}" class="bi bi-arrow-clockwise clickable-button spinning-indicator"></i>
+</span>

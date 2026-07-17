@@ -1,0 +1,22 @@
+<span class="action-toggle">
+    <span 
+        {% if entity is not none %}
+        hx-get="/admin/{{ subpath }}/{{ entity['id'] }}"
+        hx-indicator="#cancel-indicator-{{ entity['id'] }}"
+        hx-on::before-request="this.closest('.action-toggle').classList.add('is-loading')"
+        hx-on::after-request="this.closest('.action-toggle').classList.remove('is-loading')"
+        hx-swap="outerHTML"
+        {% else %}
+        hx-get="#"
+        hx-swap="delete"
+        {% endif %}
+        
+        hx-target="closest tr"
+        hx-confirm="¿Seguro que quieres cancelar?">
+        <i class="bi bi-x-lg clickable-button"></i>
+    </span>
+
+    {% if entity is not none %}
+    <i id="cancel-indicator-{{ entity['id'] }}" class="bi bi-arrow-clockwise clickable-button spinning-indicator"></i>
+    {% endif %}
+</span>
