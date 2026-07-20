@@ -13,17 +13,9 @@
   <tfoot>
     <tr id="add">
       <td colspan="100%" class="text-center">
-        <span id="new-button" class="action-toggle">
-          <span hx-get="/admin/users/new" hx-indicator="#new-indicator"
-            hx-target="#table-contents" hx-swap="beforeend"
-            hx-on::before-request="this.closest('.action-toggle').classList.add('is-loading')"
-            hx-on::after-request="this.closest('.action-toggle').classList.remove('is-loading')">
-            <i class="bi bi-plus-circle-fill clickable-button"></i>
-          </span>
-
-          <i id="new-indicator"
-            class="bi bi-arrow-clockwise clickable-button spinning-indicator"></i>
-        </span>
+        {% set subpath = 'users' %}
+          {% set element = 'usuario' %}
+          {% include 'buttons/new.html' %}
       </td>
     </tr>
   </tfoot>
