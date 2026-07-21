@@ -13,30 +13,18 @@
     </td>
     <td class="text-center">
         <div class="buttonCell">
-            {% include 'wol_button.html' %}
-            {% include 'ping_button.html' %}
+            {% include 'buttons/wol.html' %}
+            {% include 'buttons/ping.html' %}
         </div>
     </td>
     <td class="text-center">
         <div class="buttonCell">
-            <i class="bi bi-pencil-square clickable-button" hx-get="/admin/machines/{{ machine['id'] }}/edit"
-                hx-trigger="edit" hx-target="closest tr" hx-swap="outerHTML" onClick="let editing = document.querySelector('.editing')
-                         if(editing) {
-                           Swal.fire({title: 'Already Editing',
-                                      showCancelButton: true,
-                                      confirmButtonText: 'Yep, Edit This Row!',
-                                      text:'Hey!  You are already editing a row!  Do you want to cancel that edit and continue?'})
-                           .then((result) => {
-                                if(result.isConfirmed) {
-                                   htmx.trigger(editing, 'cancel')
-                                   htmx.trigger(this, 'edit')
-                                }
-                            })
-                         } else {
-                            htmx.trigger(this, 'edit')
-                         }"></i>
-            <i class="bi bi-trash-fill clickable-button" hx-delete="/admin/machines/{{ machine['id'] }}"
-                hx-confirm="Are you sure you want to delete this machine?" hx-target="closest tr"></i>
+            {% set subpath = 'machines' %}
+            {% set element = 'máquina' %}
+            {% set entity = machine %}
+            {% include 'buttons/edit.html' %}
+
+            {% include 'buttons/delete.html' %}
         </div>
     </td>
 </tr>

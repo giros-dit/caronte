@@ -13,16 +13,17 @@
     </td>
     <td class="text-center">
         <div class="buttonCell">
-            {% include 'wol_button.html' %}
-            {% include 'ping_button.html' %}
+            {% include 'buttons/wol.html' %}
+            {% include 'buttons/ping.html' %}
         </div>
     </td>
     <td class="text-center">
         <div class="buttonCell">
-            <i class="bi bi-floppy2 clickable-button" hx-put="/admin/machines/{{ machine['id'] }}"
-                hx-include="closest tr" hx-target="closest tr" hx-swap="outerHTML"></i>
-            <i class="bi bi-x-lg clickable-button" hx-delete="/admin/machines/{{ machine['id'] }}"
-                hx-target="closest tr" hx-swap="delete"></i>
+            {% set subpath = 'machines' %}
+            {% set element = 'máquina' %}
+            {% set entity = machine %}
+            {% include 'buttons/save.html' %}
+            {% include 'buttons/cancel.html' %}
         </div>
     </td>
 </tr>
