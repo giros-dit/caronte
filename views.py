@@ -14,7 +14,7 @@ def index():
             owner = Ownership.query.filter_by(user_id = current_user.id).all()
             for machine in owner:
                 machines.append(Machine.query.get(machine.machine_id))
-        return render_template('index.html', machines=machines)
+        return render_template('index/main.html', machines=machines)
 
 
 @views.route('/admin/machines', methods=['GET'])

@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block container %}
+<h3>Inicio</h3>
+<div class="borderTable align-middle">
+  {% if machines: %}
+  <input type="text" id="search" name="search" class="form-control" placeholder="Buscar..."
+         hx-get="/api/machines/search" hx-swap="innerHTML" hx-target="#table-contents" 
+         hx-trigger="keyup changed delay:500ms"
+         hx-params="search">
+  <br>
+  {% include "index/table.html" %}
+  
+  {% else: %}
+    <h4>No tiene ninguna máquina asignada, consulte con el administrador de la aplicación.</h4>
+  {% endif %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+{% endblock %}
