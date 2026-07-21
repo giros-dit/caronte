@@ -12,22 +12,11 @@
     </td>
     <td class="text-center">
         <div class="buttonCell">
-            <a href="/admin/ownership/{{ user['id'] }}/machines"><i
-                    class="bi bi-pc-display clickable-button"></i></a>
-            {% if not user['external'] %}
-            <span class="action-toggle">
-                <span
-                    hx-patch="/admin/users/{{ user['id'] }}"
-                    hx-indicator="#lock-indicator-{{ user['id'] }}"
-                    hx-swap="none"
-                    hx-on::before-request="this.closest('.action-toggle').classList.add('is-loading')"
-                    hx-on::after-request="this.closest('.action-toggle').classList.remove('is-loading')">
-                    <i class="bi bi-unlock2-fill clickable-button"></i>
-                </span>
 
-                <i id="lock-indicator-{{ user['id'] }}"
-                    class="bi bi-arrow-clockwise clickable-button spinning-indicator"></i>
-            </span>
+            {% include 'buttons/ownership.html' %}
+
+            {% if not user['external'] %}
+            {% include 'buttons/password_reset.html' %}
             {% endif %}
             
             {% set subpath = 'users' %}
