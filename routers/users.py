@@ -144,7 +144,8 @@ def update_user(userId):
                          "title": "Acción no permitida",
                          "options": {}
                         }
-
+                
+                logger.warning(f"Attempted to reset password for external user {user.username}.")
                 response = make_response('', 405)
 
             try:
@@ -282,14 +283,18 @@ def reset_password():
     if request.method == 'GET':
         token = request.args.get('token')
         
-        try:
-            user = getUserByToken(token)
-            return render_template('change_password.html', token=token), 200
-        
-        except LookupError as e:
-            response = e.args[0]
-            return response
+        if request.headers.get('HX-Request') == 'true':
 
+            try:
+                user = getUserByToken(token)
+                return render_template('password_reset/form.html', token=token), 200
+                
+            except LookupError as e:
+                response = e.args[0]
+                return response
+
+        else:
+            return render_template('password_reset/main.html', token=token), 200
     
     elif request.method == 'POST':
         token = request.form.get('token')
@@ -299,24 +304,30 @@ def reset_password():
 
             password = request.form.get('password')
             confirmPassword = request.form.get('confirmPassword')
+            
+            error_flag = False
 
-            if not password or not confirmPassword:
-                response = make_response(render_template('change_password.html', token=token), 400)
+            if not password or password == '' or not confirmPassword or confirmPassword == '':
+                response = make_response('', 400)
                 toast = {"type": "warning",
                          "message": "Por favor, complete todos los campos.",
                          "title": "Error al restablecer contraseña",
                          "options": {}
                         }
+                error_flag = True
 
             if password != confirmPassword:
-                response = make_response(render_template('change_password.html', token=token), 400)
+                response = make_response('', 400)
                 toast = {"type": "warning",
                          "message": "Las contraseñas no coinciden.",
                          "title": "Error al restablecer contraseña",
                          "options": {}
                         }
-            
-            response.headers['HX-Trigger-After-Settle'] = f'{{"new-toast": {json.dumps(toast)} }}'
+                error_flag = True
+
+            if error_flag:
+                response.headers['HX-Trigger'] = f'{{"new-toast": {json.dumps(toast)} }}'
+                return response
 
             try:
                 user.setPassword(password)
@@ -330,12 +341,20 @@ def reset_password():
                         f"Contraseña actualizada en {config['SERVER_NAME']}",
                         mail.buildMessage('updatedPassword')
                     )
+                    
                 except Exception as e:
-                    print(e)
-                    response = make_response(redirect(url_for('views.index')), 200)
+                    logger.error(f"Error sending password update email: {e}")
 
+                response = make_response('', 200)
+                response.headers['HX-Redirect'] = url_for('auth.login')
+                
             except:
-                response = make_response(render_template('change_password.html', token=token), 400)
+                response = make_response('', 400)
+                toast = {"type": "error",
+                         "message": "Ha ocurrido un error al actualizar la contraseña. Por favor, inténtelo de nuevo. Si el problema persiste, contacte con el administrador del sistema.",
+                         "title": "Error al actualizar contraseña",
+                         "options": {}
+                        }
                     
         except LookupError as e:
             response = e.args[0]

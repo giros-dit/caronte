@@ -3,14 +3,17 @@ from email.mime.text import MIMEText
 import smtplib
 import os
 
+from utils import logger
+
 try:
     from app import config
 except:
-    print("Missing server configuration file.")
+    logger.error("Missing server configuration file.")
 
 def sendMail(to, subject, message):
     
     if (message is None):
+        logger.error("Message is empty.")
         raise Exception("Message is empty.")
     
     msg = MIMEMultipart()
@@ -27,13 +30,15 @@ def sendMail(to, subject, message):
     if config['MAIL_USER'] and config['MAIL_PASS']:
         try:
             server.login(config['MAIL_USER'], config['MAIL_PASS'])
+            logger.debug("Logged in to mail server successfully.")
         except:
+            logger.error("Error logging in to mail server.")
             raise Exception("Error logging in to mail server.")
     
     try:
         server.sendmail(msg['From'], msg['To'], msg.as_string())
     except Exception as e:
-        print(e)
+        logger.error(f"Error sending email: {e}")
         raise Exception("Error sending email.")
 
     server.quit()
@@ -49,4 +54,5 @@ def buildMessage(template, fields = {}):
 
             return content
     except:
+        logger.error("Failed to generate message.")
         raise Exception("Failed to generate message.")

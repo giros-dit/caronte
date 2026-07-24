@@ -2,7 +2,7 @@
 
 <div class="d-flex justify-content-center align-items-center">
 	<div class="borderTable p-5 rounded-5 text-secondary shadow" style="width: 25rem">
-		<form action="/login" method="post">
+		<form hx-post="/login" hx-swap="none">
 
 			<div class="input-group">
 				<div class="input-group-text">
@@ -28,7 +28,4 @@
 			href="/oidc/login">OIDC Login</a>
 	</div>
 </div>
-{% endblock %}
-
-{% block user_info %}
 {% endblock %}

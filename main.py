@@ -2,6 +2,7 @@ from flask import request, redirect, url_for
 from flask_login import login_required, LoginManager
 
 import os
+import logging
 
 from database import init_db, db_session
 from models import User
@@ -13,16 +14,19 @@ from routers.ownership import ownership as ownershipRouter
 from routers.api import api as apiRouter
 
 from app import config
+from utils import logger
 
 login_manager = LoginManager()
 
 from app import app
 
+logging.basicConfig(encoding='utf-8', level=config['LOG_LEVEL'], format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
 init_db()
 
 users = User.query.all()
 if users == []:
-    print("No users found, creating default admin user with random password...")
+    logger.info("No users found, creating default admin user with random password...")
     adminPassword = os.urandom(8).hex()
     newUser = User(username="admin", email=None, password=adminPassword)
     newUser.admin = True
@@ -31,9 +35,9 @@ if users == []:
         db_session.add(newUser)
         db_session.commit()
     except Exception as e:
-        print("Error creating default admin user: " + str(e))
+        logger.error(f"Error creating default admin user: {e}")
     finally:
-        print(f"Default 'admin' user created with password: {adminPassword} \n\n")
+        logger.info(f"Default 'admin' user created with password: {adminPassword} \n\n")
 
 
 app.secret_key = config['SECRET']

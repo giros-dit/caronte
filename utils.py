@@ -1,9 +1,11 @@
-from flask import make_response, redirect, url_for
+from flask import make_response, render_template
+import logging
 
 import json
 
 from models import User, Machine, Ownership
 
+logger = logging.getLogger(__name__)
 
 def getUser(userId):
     user = User.query.get(userId)
@@ -16,7 +18,7 @@ def getUser(userId):
                  "title": "Usuario no encontrado",
                  "options": {}
                 }
-        response.headers['HX-Trigger-After-Settle'] = f'{{"new-toast": {json.dumps(toast)} }}'
+        response.headers['HX-Trigger'] = f'{{"new-toast": {json.dumps(toast)} }}'
         
         raise LookupError(response)
 
@@ -25,13 +27,13 @@ def getUserByToken(token):
     if user:
         return user
     else:
-        response = make_response(redirect(url_for('views.index')), 404)
+        response = make_response('', 404)
         toast = {"type": "error",
                  "message": "Token inválido o expirado.",
                  "title": "Token no encontrado",
                  "options": {}
                 }
-        response.headers['HX-Trigger-After-Settle'] = f'{{"new-toast": {json.dumps(toast)} }}'
+        response.headers['HX-Trigger'] = f'{{"new-toast": {json.dumps(toast)} }}'
         
         raise LookupError(response)
 

@@ -12,6 +12,7 @@ from app import oidc, config
 from database import db_session
 from models import User, Ownership, Machine
 import mail.mail as mail
+from utils import logger
 
 auth = Blueprint('auth', __name__)
 
@@ -22,8 +23,14 @@ def admin_required(f):
             return redirect(url_for('auth.login', next=request.url))
         
         if current_user.admin is False:
-            flash('You have no permission to access this resource.', category='error')
-            return redirect(url_for('views.index'))
+            if request.headers.get('HX-Request') == 'true':
+                response = make_response(redirect(url_for('views.index')), 403)
+                response.headers['HX-Trigger-After-Settle'] = '''{"new-toast": {"type": "error", "message": "No tienes permiso para acceder a este recurso.", "title": "Forbidden", "options": {}}}'''
+            else:   
+                response = make_response('Forbidden', 403)
+
+            logger.debug(f"User {current_user.username} attempted to access an admin-only resource.")
+            return response
         return f(*args, **kwargs)
     return decorated_function
 
@@ -35,10 +42,13 @@ def authorization_required(f):
         
         if not current_user.admin and not hasattr(current_user, 'service') and ownership is None:
             if request.headers.get('HX-Request') == 'true':
-                flash('You have no permission to access this resource.', category='error')
-                return redirect(url_for('views.index'))
-            else:
-                return 'Forbidden', 403
+                response = make_response(redirect(url_for('views.index')), 403)
+                response.headers['HX-Trigger-After-Settle'] = '''{"new-toast": {"type": "error", "message": "No tienes permiso para acceder a este recurso.", "title": "Forbidden", "options": {}}}'''
+            else:   
+                response = make_response('Forbidden', 403)
+                
+            logger.debug(f"User {current_user.username} attempted to access an authorized resource.")
+            return response
         return f(*args, **kwargs)
     return decorated_function
 
@@ -56,6 +66,8 @@ def generate_recovery_token(user):
                  "options": {}
                 }
         response.headers['HX-Trigger-After-Settle'] = f'{{"new-toast": {json.dumps(toast)} }}'
+        
+        logger.error(f"Error generating recovery token for user {user.username}.")
         raise RuntimeError(response)
                    
     try:
@@ -65,7 +77,9 @@ def generate_recovery_token(user):
             mail.buildMessage('resetPassword', {'$RECOVERY_URL': f"{config['SERVER_URL']}/reset-password?token={recoveryToken}"})
         )
 
+        logger.info(f"Recovery email sent to user {user.username}.")
         return
+        
     except Exception as e:
         response = make_response('', 500)
         toast = {"type": "error",
@@ -74,6 +88,8 @@ def generate_recovery_token(user):
                     "options": {}
                 }
         response.headers['HX-Trigger-After-Settle'] = f'{{"new-toast": {json.dumps(toast)} }}'
+        
+        logger.error(f"Error sending recovery email to user {user.username}: {e}")
         raise RuntimeError(response)
     
 
@@ -88,16 +104,23 @@ def login():
             (User.email == user_id)
         ).first()
         
+        toast = {"type": "error",
+            "message": "Nombre de usuario o contraseña incorrectos.",
+            "title": "Inicio de sesión fallido",
+            "options": {}
+            }
+        
+        response = make_response('', 401)
+        response.headers['HX-Trigger'] = f'{{"new-toast": {json.dumps(toast)} }}'
+        
         if user:
             if check_password_hash(user.password, password):
                 login_user(user, duration=timedelta(minutes=30))
-                return redirect(url_for('views.index'))
-            else:
-                flash('Contraseña incorrecta.', category='error')
-                return render_template("login.html"), 401
-        else:
-            flash('El usuario o email especificado no está registrado.', category='error')
-            return render_template("login.html"), 404
+                
+                response = make_response('', 200)
+                response.headers['HX-Redirect'] = '/'
+            
+        return response
                         
     elif request.method == 'GET':
         if current_user.is_authenticated:
@@ -116,12 +139,30 @@ def forgot_password():
         ).first()   
              
         if user:
-            if generate_recovery_token(user):
-                flash('Se ha enviado un correo electrónico para restablecer la contraseña.', category='success')
-                return redirect(url_for('auth.login'))
+            try:
+                generate_recovery_token(user)         
+                toast = {"type": "success",
+                        "message": "Se ha enviado un correo electrónico para restablecer la contraseña. Vuelve a la página de inicio de sesión para continuar.",
+                        "title": "Mensaje enviado",
+                        "options": {}   
+                }
+                
+                response = make_response('', 200)
+                response.headers['HX-Trigger-After-Settle'] = f'{{"new-toast": {json.dumps(toast)} }}'
+                
+            except RuntimeError as e:
+                response = e
+                
         else:
-            flash('El email especificado no está registrado.', category='error')
-            return render_template("forgot_password.html"), 404
+            toast = {"type": "error",
+                    "message": "El usuario o email especificado no está registrado.",
+                    "title": "Usuario no encontrado",
+                    "options": {}   
+            }
+            response = make_response('', 404)
+            response.headers['HX-Trigger'] = f'{{"new-toast": {json.dumps(toast)} }}'
+          
+        return response
         
     elif request.method == 'GET':
         return render_template("forgot_password.html")

@@ -31,7 +31,7 @@
   </span>
   {% endblock %}
   <div class="container" style="position: relative;">
-    <div id="logoCaronte"></div>
+    <a href="/"><div id="logoCaronte"></div></a>
     {% if current_user.admin %}
     {% block admin_menu %}
     <a id="linkIndex" href="{{ url_for('views.index')}}">Inicio</a>

@@ -1,0 +1,13 @@
+{% extends "layout.html" %} {% block container %}
+
+<div class="d-flex justify-content-center align-items-center">
+	<div hx-get="/reset-password?token={{ token }}" hx-swap="beforeend" hx-trigger="load" class="borderTable p-5 rounded-5 text-secondary shadow" style="width: 25rem">
+		<span class="text-center fs-5 fw-bold">Antes de continuar, debes actualizar tu contraseña</span>
+	</div>
+</div>
+{% endblock %}
+
+
+
+{% block user_info %}
+{% endblock %}
