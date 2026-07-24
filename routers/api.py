@@ -22,13 +22,29 @@ def test():
         
     return response
 
-@api.route('/api/wol/<int:machineId>', methods=['GET'])
+@api.route('/api/wol', methods=['GET'])
 @authentication_required
 @authorization_required
-def wol(machineId):
-    machine = Machine.query.get(machineId)
+def wol():
+    id = request.args.get('id')
+    mac = request.args.get('mac')
     
-    wakeonlan.wake(machine.mac, host=machine.ip , port=machine.port)
+    if not mac:
+        if not id:
+            if (request.headers.get('HX-Request') == 'true'):
+                    response = make_response(render_template('buttons/wol.html', machine=machine, status=True), 200)
+                    toast = {"type": "warning",
+                             "message": f"No se proporcionó MAC ni ID de máquina",
+                             "title": "Error al enviar paquete WoL",
+                             "options": {}
+                             }
+            response.headers['HX-Trigger-After-Settle'] = '''{"new-toast": ''' + json.dumps(toast) + '''}'''
+            return response
+        
+        machine = Machine.query.get(id)
+        mac = machine.mac
+    
+    wakeonlan.wake(mac)
 
     if (request.headers.get('HX-Request') == 'true'):
         response = make_response(render_template('buttons/wol.html', machine=machine, status=True), 200)
