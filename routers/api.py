@@ -60,14 +60,30 @@ def wol():
     return response
 
 
-@api.route('/api/ping/<int:machineId>', methods=['GET'])
+@api.route('/api/ping', methods=['GET'])
 @authentication_required
 @authorization_required
-def ping(machineId):
-    machine = Machine.query.get(int(machineId))
+def ping():
+    id = request.args.get('id')
+    host = request.args.get('host')
+    
+    if not host:
+        if not id:
+            if (request.headers.get('HX-Request') == 'true'):
+                    response = make_response(render_template('buttons/ping.html', machine=machine, status=True), 200)
+                    toast = {"type": "warning",
+                             "message": f"No se proporcionó host ni ID de máquina",
+                             "title": "Error al hacer ping",
+                             "options": {}
+                             }
+            response.headers['HX-Trigger-After-Settle'] = '''{"new-toast": ''' + json.dumps(toast) + '''}'''
+            return response
+    
+        machine = Machine.query.get(id)
+        host = machine.ip
     
     try:
-        ping3.ping(machine.ip)
+        ping3.ping(host)
         
         if (request.headers.get('HX-Request') == 'true'):
             response = make_response(render_template('buttons/ping.html', machine=machine, status=True), 200)
