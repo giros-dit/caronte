@@ -1,43 +1,70 @@
-# wolwebapp
+# Caronte
 
-Wolwebapp es un aplicación que posibilita el encendido remoto de ordenadores, monitorizar el estado de los mismos y la gestión de usuarios y sus permisos, todo ello desde un interfaz web. 
-<!-- El objetivo es desplegar el servicio en un equipo de bajo consumo que estará conectado para así reducir las horas que están los ordenadores encendidos. -->
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./static/caronte-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="./static/caronte-light.png">
+  <img alt="Shows a black logo in light color mode and a white one in dark color mode." src="./static/caronte.png">
+</picture>
 
-## Instalación del servicio
+Caronte es un aplicación que posibilita el encendido remoto de ordenadores, monitorizar el estado de los mismos y la gestión de usuarios y sus permisos, todo ello desde un interfaz web. 
 
-Para configurar la instalación del servicio tan solo es necesario descargar el fichero `install.sh` y ejecutarlo en una shell de Linux, siguiendo estos pasos:
-
-```bash
-wget https://raw.githubusercontent.com/DAT-ETSIT/wolwebapp/main/install.sh
-chmod +x install.sh
-sudo ./install.sh
-```
-
-A continuación se detalla el funcionamiento del mismo:
-
-Comprueba que estén instaladas las dependencias necesarias y en caso de que haya alguna que no, la instala. Las dependencias necesarias son: `git python3 python3-pip python3-venv openssl wakeonlan`.
-
-Una vez instaladas las dependencias, clona el repositorio [wolwebapp](https://github.com/DAT-ETSIT/wolwebapp) y cambia el directorio de trabajo al generado con la clonación.
-
-En caso de no proporcionar un certificado propio (ver apartado [Argumentos](#argumentos)), el terminal solicitará algunos parámetros para generarlo de forma automática.
-
-Con el certificado ya introducido o generado, se crea un entorno virtual de python para la aplicación en el que se instalan las librerías necesarias para la misma. Estas se encuentran en el fichero `requirements.txt`.
-
-Entre los comentarios que van apareciendo en el terminal el script solicita un nombre "identificativo del servidor", este nombre es el que aparecerá en las cabeceras de los correos que se envían de forma automática. También hay que introducir manualmente el correo y la contraseña del primer administrador de la aplicación (esta contraseña se podrá modificar más adelante en la propia aplicación).
-
-Finalmente se configura el envío de mensajes por correo electrónico y se levanta el servicio. Este servicio se utiliza para el envío de las credenciales temporales para el alta o modificación de usuarios sin que el administrador pueda conocerlas.
-
-### Argumentos 
-
-Los argumentos que pueden utilizarse a la hora de instalar 
+## Instalación
+La aplicación solo admite su despliegue mediante la imagen de docker:
 
 ```bash
--h   Mostrar ayuda
--b   BIND_ADDRESS - Dirección de la interfaz de reden la que escuchará el servidor (por defecto 0.0.0.0).
--p   PORT - Puerto empleado por la aplicación. Si se inicia en modo 'standalone' se emplean 80 y 443 por defecto, si se configura para emplear junto con un proxy inverso, se emplea el 3000.
--w   PARENT_PATH - Directorio donde se instalará la aplicación (por     
-                   defecto /srv).
--m   SERVER_MODE - Si se especifica 'standalone', se instalará el servicio en los puertos 80 y 443 y se empleará el certificado SSL indicado. Si no es especifica o el valor es distinto, el servidor tan solo estará disponble en el puerto especificado y solo en modo http.
--c   CERT_PATH - Ruta del certificado SSL.
--k   KEY_PATH - Clave del certificado SSL.
+docker run -p 3000:3000 -v ./data:/app/data ghcr.io/giros-dit/caronte:latest
 ```
+
+## Configuración
+Caronte admite las siguientes variables de entorno:
+
+ Variable | Descripción | Valor por defecto 
+----------|-------------|-------------------
+ SERVER_NAME | String con el nombre del servidor | `Wake on LAN Server` 
+ SERVER_URL | URL de acceso al servidor, incluyendo el puerto | `http://localhost:3000`
+ MAIL_FROM | Dirección de envío de mensajes. Admite formato `Example <noreply@example.com>` | `-`
+ MAIL_SERVER | Servidor SMTP para envío de emails | `-`
+ MAIL_PORT | Puerto de conexión del servidor SMTP | `25`
+ MAIL_USE_TLS | Uso de TLS en la conexión con el servidor SMTP | `False`
+ MAIL_USER | Usuario del servidor SMTP | `-`
+ MAIL_PASS | Contraseña del servidor SMTP | `-`
+ SECRET | Secreto de la sesión de Flask. Si cambia, los usuarios deberán volver a a autenticarse. | Se generará automáticamente en cada arranque mediante `os.urandom(32)`.
+ SESSION_COOKIE_SECURE | Admitir solo conexiones HTTPS para el intercambio de cookies. | `False`
+ SESSION_COOKIE_HTTPONLY | Evita que los scripts accedan a las cookies de sesión. | `True`
+ SESSION_COOKIE_SAMESITE | Controla el intercambio de cookies en peticiones *cross-site*. | `Lax`
+ OIDC_ENABLED | Habilita la autenticación mediante OIDC. | `False`
+ OIDC_SCOPES | Scopes por defecto de OIDC. | `openid email profile`
+ OIDC_CLIENT_SECRETS | Fichero de secretos del cliente OIDC. Más información [aquí](#autenticación-mediante-oidc). | `./data/client_secrets.json`
+ OIDC_PATH_PREFIX | Prefijo de ruta para la autenticación OIDC. Si se deja vacío, no podrá usarse la autenticación local. | `/oidc`
+ OIDC_OVERWRITE_REDIRECT_URI | URL de redirección de OIDC. Esta debe configurarse en el servicio OIDC. | `http://localhost:3000/oidc/authorize`
+ OIDC_ADMIN_GROUPS | Grupos de OIDC (separados por espacios) cuyos usuarios obtendrán permisos de administrador en el próximo inicio de sesión. | `-`
+ OIDC_SERVICE_GROUPS | Grupos de OIDC (separados por espacios) cuyos usuarios serán tratados como cuentas de servicio. | `-`
+ OIDC_RECOVER_PASSWORD_URL | URL de recuperación de contraseña de OIDC para la página de recuperación. | `-`
+ LOG_LEVEL | Controla el nivel de severidad de las trazas. | `INFO`
+
+ ## Autenticación mediante OIDC
+Para usar autenticación mediante OIDC, la aplicación espera un fichero `client_secrets.json` dentro de la carpeta `/app/data`. El fichero debe tener este formato:
+
+```json
+{
+    "web": {
+        "client_id": "",
+        "client_secret": "",
+        "auth_uri": "",
+        "token_uri": "",
+        "userinfo_uri": "",
+        "issuer": "",
+        "redirect_uris": ["http://localhost:3000/oidc/authorize"]
+    }
+}
+```
+
+---
+Proyecto desarrollado por:
+- @aLVaRoZz01
+- @oscarlpujol
+- @pablofl01
+---
+<div align="center">
+  Grupo GIROS &copy; 2026
+</div>
