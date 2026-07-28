@@ -28,20 +28,40 @@ def test():
 def wol():
     id = request.args.get('id')
     mac = request.args.get('mac')
+    ip = request.args.get('ip')
     
     if not mac:
-        if not id:
+        if not ip:
+            if not id:
+                if (request.headers.get('HX-Request') == 'true'):
+                        response = make_response(render_template('buttons/wol.html', machine=machine, status=True), 200)
+                        toast = {"type": "warning",
+                                "message": f"No se proporcionó MAC ni ID de máquina",
+                                "title": "Error al enviar paquete WoL",
+                                "options": {}
+                                }
+                response.headers['HX-Trigger-After-Settle'] = '''{"new-toast": ''' + json.dumps(toast) + '''}'''
+                return response
+        
+            machine = Machine.query.get(id)
+            
+        machine = Machine.query.filter_by(ip=ip).first()
+        
+        if not machine:
             if (request.headers.get('HX-Request') == 'true'):
-                    response = make_response(render_template('buttons/wol.html', machine=machine, status=True), 200)
-                    toast = {"type": "warning",
-                             "message": f"No se proporcionó MAC ni ID de máquina",
-                             "title": "Error al enviar paquete WoL",
-                             "options": {}
-                             }
-            response.headers['HX-Trigger-After-Settle'] = '''{"new-toast": ''' + json.dumps(toast) + '''}'''
+                response = make_response(render_template('buttons/wol.html', machine=machine, status=True), 200)
+                toast = {"type": "error",
+                        "message": f"No se encontró la máquina",
+                        "title": "Error al enviar paquete WoL",
+                        "options": {}
+                        }
+                response.headers['HX-Trigger-After-Settle'] = '''{"new-toast": ''' + json.dumps(toast) + '''}'''
+
+            else:
+                response = make_response('', 404)
+                
             return response
         
-        machine = Machine.query.get(id)
         mac = machine.mac
     
     wakeonlan.wake(mac)
