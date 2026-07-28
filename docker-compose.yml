@@ -1,0 +1,35 @@
+services:
+  caronte:
+    image: ghcr.io/giros-dit/caronte:latest
+    container_name: caronte
+    volumes:
+      - ./data:/app/data
+    ports:
+      - 3000:3000
+    environment:
+      SERVER_NAME: Caronte
+      SERVER_URL: http://localhost:3000
+      
+      MAIL_FROM: Bumblebee <bumblebee@fdezlopez.es>
+      MAIL_SERVER: localhost
+      MAIL_PORT: 25
+      MAIL_USE_TLS: False
+      #MAIL_USER: 
+      #MAIL_PASS: 
+        
+      SECRET: ajdfojwqoefjwjefjowejfoiaodifjwqeoifj=
+      SESSION_COOKIE_SECURE: True
+      SESSION_COOKIE_HTTPONLY: True
+      
+      SESSION_COOKIE_SAMESITE: Lax
+      
+      OIDC_ENABLED: True
+      OIDC_SCOPES: openid email profile
+      OIDC_CLIENT_SECRETS: ./data/client_secrets.json
+      OIDC_PATH_PREFIX: /oidc
+      OIDC_OVERWRITE_REDIRECT_URI: http://localhost:3000/oidc/authorize
+      OIDC_ADMIN_GROUPS: caronte-admins
+      OIDC_SERVICE_GROUPS: caronte-service
+      OIDC_RECOVER_PASSWORD_URL: https://giros-srv.dit.upm.es/auth/if/flow/default-recovery-flow/
+      
+      LOG_LEVEL: DEBUG

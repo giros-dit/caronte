@@ -1,5 +1,4 @@
-from flask import request, redirect, url_for
-from flask_login import login_required, LoginManager
+from flask_login import LoginManager
 
 import os
 import logging
@@ -14,13 +13,14 @@ from routers.ownership import ownership as ownershipRouter
 from routers.api import api as apiRouter
 
 from app import config
-from utils import logger
 
 login_manager = LoginManager()
 
-from app import app
+from app import app, oidc
 
 logging.basicConfig(encoding='utf-8', level=config['LOG_LEVEL'], format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+logger = logging.getLogger(__name__)
 
 init_db()
 
@@ -40,8 +40,12 @@ if users == []:
         logger.info(f"Default 'admin' user created with password: {adminPassword} \n\n")
 
 
-app.secret_key = config['SECRET']
-app.register_blueprint(auth) 
+logger.debug(f"Flask app configuration: {app.config}")
+if oidc is not None:
+    logger.info("OIDC authentication is enabled.")
+    
+app.secret_key = app.config['SECRET']
+app.register_blueprint(auth)
 app.register_blueprint(views)
 app.register_blueprint(usersRouter)
 app.register_blueprint(machinesRouter)
@@ -50,7 +54,6 @@ app.register_blueprint(apiRouter)
 login_manager.login_view = "auth.login"
 login_manager.login_message = None
 login_manager.init_app(app)
-
 
 @app.teardown_appcontext
 def shutdown_session(exception=None):

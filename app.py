@@ -2,10 +2,13 @@ from flask import Flask
 from flask_oidc import OpenIDConnect
 
 import os
+import logging
 
 from dotenv import load_dotenv, dotenv_values
 
 app = Flask(__name__)
+
+logger = logging.getLogger(__name__)
 
 config = {}
 
@@ -47,5 +50,5 @@ app.config.from_mapping(config)
 
 oidc = None
 
-if app.config['OIDC_ENABLED'] == 'True':
+if app.config['OIDC_ENABLED']:
     oidc = OpenIDConnect(app, prefix=app.config['OIDC_PATH_PREFIX'] if 'OIDC_PATH_PREFIX' in app.config else None)
