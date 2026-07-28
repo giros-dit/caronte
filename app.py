@@ -24,12 +24,12 @@ config['SECRET'] = os.getenv('SECRET') or os.urandom(32)
 config['SESSION_COOKIE_SECURE'] = os.getenv('SESSION_COOKIE_SECURE') or True
 config['SESSION_COOKIE_HTTPONLY'] = os.getenv('SESSION_COOKIE_HTTPONLY') or True
 
-config['SESSION_COOKIE_SAMESITE'] = os.getenv('SESSION_COOKIE_SAMESITE') or 'Lax'
+config['SESSION_COOKIE_SAMESITE'] = os.getenv('SESSION_COOKIE_SAMESITE') or "Lax"
 
 config['OIDC_ENABLED'] = os.getenv('OIDC_ENABLED') or False
-config['OIDC_SCOPES'] = os.getenv('OIDC_SCOPES') or 'openid email profile'
-config['OIDC_CLIENT_SECRETS'] = os.getenv('OIDC_CLIENT_SECRETS') or './data/client_secrets.json'
-config['OIDC_PATH_PREFIX'] = os.getenv('OIDC_PATH_PREFIX') or '/oidc'
+config['OIDC_SCOPES'] = os.getenv('OIDC_SCOPES') or "openid email profile"
+config['OIDC_CLIENT_SECRETS'] = os.getenv('OIDC_CLIENT_SECRETS') or "./data/client_secrets.json"
+config['OIDC_PATH_PREFIX'] = os.getenv('OIDC_PATH_PREFIX') or "/oidc"
 config['OIDC_OVERWRITE_REDIRECT_URI'] = os.getenv('OIDC_OVERWRITE_REDIRECT_URI') or ''
 config['OIDC_ADMIN_GROUPS'] = os.getenv('OIDC_ADMIN_GROUPS') or ''
 config['OIDC_SERVICE_GROUPS'] = os.getenv('OIDC_SERVICE_GROUPS') or ''
@@ -48,4 +48,4 @@ app.config.from_mapping(config)
 oidc = None
 
 if app.config['OIDC_ENABLED'] == 'True':
-    oidc = OpenIDConnect(app, prefix=config['OIDC_PATH_PREFIX'] if 'OIDC_PATH_PREFIX' in config else None)
+    oidc = OpenIDConnect(app, prefix=app.config['OIDC_PATH_PREFIX'] if 'OIDC_PATH_PREFIX' in app.config else None)
