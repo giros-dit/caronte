@@ -25,7 +25,7 @@ def test():
 @api.route('/api/wol', methods=['GET'])
 @authentication_required
 @authorization_required
-def wol():
+def wol(id=None, mac=None, ip=None):
     id = request.args.get('id')
     mac = request.args.get('mac')
     ip = request.args.get('ip')
@@ -34,18 +34,20 @@ def wol():
         if not ip:
             if not id:
                 if (request.headers.get('HX-Request') == 'true'):
-                        response = make_response(render_template('buttons/wol.html', machine=machine, status=True), 200)
-                        toast = {"type": "warning",
-                                "message": f"No se proporcionó MAC ni ID de máquina",
-                                "title": "Error al enviar paquete WoL",
-                                "options": {}
-                                }
-                response.headers['HX-Trigger-After-Settle'] = '''{"new-toast": ''' + json.dumps(toast) + '''}'''
+                    response = make_response(render_template('buttons/wol.html', machine=machine, status=True), 200)
+                    toast = {"type": "warning",
+                            "message": f"No se proporcionó MAC ni ID de máquina",
+                            "title": "Error al enviar paquete WoL",
+                            "options": {}
+                            }
+                    response.headers['HX-Trigger-After-Settle'] = '''{"new-toast": ''' + json.dumps(toast) + '''}'''
+                else:
+                    response = make_response('', 400)
                 return response
-        
-            machine = Machine.query.get(id)
-            
-        machine = Machine.query.filter_by(ip=ip).first()
+            else:
+                machine = Machine.query.get(int(id))
+        else:        
+            machine = Machine.query.filter_by(ip=ip).first()
         
         if not machine:
             if (request.headers.get('HX-Request') == 'true'):
@@ -61,8 +63,8 @@ def wol():
                 response = make_response('', 404)
                 
             return response
-        
-        mac = machine.mac
+        else:
+            mac = machine.mac
     
     wakeonlan.wake(mac)
 
