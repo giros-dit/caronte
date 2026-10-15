@@ -37,7 +37,7 @@ def admin_required(f):
 def authorization_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):      
-        machine_id = kwargs.get('machineId')
+        machine_id = request.args.get('id')
         ownership = Ownership.query.filter_by(user_id=current_user.id, machine_id=machine_id).first()
         
         if not current_user.admin and not hasattr(current_user, 'service') and ownership is None:
