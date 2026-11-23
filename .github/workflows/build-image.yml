@@ -1,19 +1,84 @@
 name: Build Image
 on:
   push:
+    branches:
+      - main
     tags:
       - '*'
+    paths:
+      - Dockerfile
+  pull_request_target:
+    branches:
+      - main
+    types: [opened, reopened, synchronize]
   
 jobs:
   deploy:
+    if: >-
+      github.event_name == 'push' ||
+      (github.event.pull_request.user.login == 'dependabot[bot]' &&
+       github.event.pull_request.head.repo.full_name == github.repository &&
+       startsWith(github.head_ref, 'dependabot/docker/'))
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+      pull-requests: read
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.base.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Validate and apply Dependabot digest
+        if: github.event_name == 'pull_request_target'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import re
+          import subprocess
+
+          repo = os.environ["GH_REPO"]
+          head = os.environ["PR_HEAD_SHA"]
+          pr = json.loads(subprocess.check_output([
+              "gh", "api", f"repos/{repo}/pulls/{os.environ['PR_NUMBER']}"
+          ]))
+          if (pr["state"] != "open" or pr["head"]["sha"] != head
+                  or pr["base"]["sha"] != os.environ["PR_BASE_SHA"]):
+              raise SystemExit("The pull request is closed or has changed; refusing to publish.")
+
+          pages = json.loads(subprocess.check_output([
+              "gh", "api", "--paginate", "--slurp",
+              f"repos/{repo}/pulls/{os.environ['PR_NUMBER']}/files"
+          ]))
+          if [file["filename"] for page in pages for file in page] != ["Dockerfile"]:
+              raise SystemExit("The pull request must only change Dockerfile.")
+
+          proposed = subprocess.check_output([
+              "gh", "api", "-H", "Accept: application/vnd.github.raw+json",
+              f"repos/{repo}/contents/Dockerfile?ref={head}"
+          ])
+          dockerfile = Path("Dockerfile")
+          original = dockerfile.read_bytes()
+          old_line, old_sep, old_rest = original.partition(b"\n")
+          new_line, new_sep, new_rest = proposed.partition(b"\n")
+          image = rb"FROM python:3\.12-slim@sha256:[0-9a-f]{64}"
+          if (not re.fullmatch(image, old_line) or not re.fullmatch(image, new_line)
+                  or old_line == new_line or not old_sep or not new_sep
+                  or old_rest != new_rest):
+              raise SystemExit("The proposed Dockerfile must only change the Python 3.12 digest.")
+          dockerfile.write_bytes(new_line + old_sep + old_rest)
+          PY
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v4.5.1
@@ -29,4 +94,4 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:latest
-            ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ github.ref_name }}
+            ${{ github.ref_type == 'tag' && format('ghcr.io/{0}/{1}:{2}', github.repository_owner, github.event.repository.name, github.ref_name) || '' }}

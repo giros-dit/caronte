@@ -15,6 +15,14 @@ La aplicación solo admite su despliegue mediante la imagen de docker:
 docker run -p 3000:3000 -v ./data:/app/data ghcr.io/giros-dit/caronte:latest
 ```
 
+Dependabot comprueba diariamente si hay un nuevo digest para la imagen base de
+Python y propone su actualización mediante una pull request. Si solo cambia
+el digest de `python:3.12-slim`, se reconstruye y publica `latest` automáticamente
+con el código de `main`, sin esperar a integrar la pull request. Esta debe
+integrarse para mantener el Dockerfile actualizado: los pushes de etiquetas
+publican `latest` y la imagen con el nombre de la etiqueta usando el digest
+guardado en el repositorio.
+
 ## Configuración
 Caronte admite las siguientes variables de entorno:
 
